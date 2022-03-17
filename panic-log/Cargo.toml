@@ -1,5 +1,5 @@
 [package]
-name = "fca-rt-panic-log"
+name = "gca-rt-panic-log"
 version = "0.1.0"
 edition = "2021"
 

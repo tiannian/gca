@@ -3,10 +3,10 @@
 mod utils;
 
 use cstr_core::c_char;
-use log::{Level, SetLoggerError, LevelFilter};
+use log::{Level, LevelFilter, SetLoggerError};
 
 extern "C" {
-    fn log(
+    fn _log(
         // level
         level: u8,
         // target
@@ -20,12 +20,10 @@ extern "C" {
     );
 }
 
-
 static LOGGER: Logger = Logger;
 
 pub fn init() -> Result<(), SetLoggerError> {
-    log::set_logger(&LOGGER)
-        .map(|()| log::set_max_level(LevelFilter::Info))
+    log::set_logger(&LOGGER).map(|()| log::set_max_level(LevelFilter::Info))
 }
 
 struct Logger;
@@ -43,7 +41,7 @@ impl log::Log for Logger {
         let message_ptr = utils::opt_str_to_ptr(record.args().as_str());
 
         unsafe {
-            log(level, target_ptr, file_ptr, line, message_ptr);
+            _log(level, target_ptr, file_ptr, line, message_ptr);
         }
     }
 

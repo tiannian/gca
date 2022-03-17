@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "log",
-    "panic-log"
+    "panic-log",
+    "event",
 ]
 
