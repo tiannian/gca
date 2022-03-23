@@ -1,8 +1,4 @@
-# GCA-rt
+# GCA
 
-> Runtime library for Generic Contract Architecture.
-
-## Target
-
-- wasm32-unknown-unknown
+> Generic Contract Architecture
 

@@ -1,7 +1,11 @@
 [workspace]
 members = [
-    "log",
-    "panic-log",
-    "event",
+    "gca",
+    "gca-rt/log",
+    "gca-rt/panic-log",
+    "gca-rt/event",
+    "gca-rt/tx",
+    "gca-rt/env",
+    "gca-rt/block",
 ]
 
