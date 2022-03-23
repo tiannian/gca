@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 primitive-types = { version = "0.11", default-features = false, features = ["serde_no_std"] }
+
+gca-core = { path = "../../gca", version = "0.1.0" }
+

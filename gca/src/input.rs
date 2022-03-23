@@ -2,6 +2,7 @@ use alloc::vec::Vec;
 
 use crate::Txhash;
 
+#[derive(Debug, Default)]
 pub struct OutputId {
     pub txhash: Txhash,
     pub n: u64,

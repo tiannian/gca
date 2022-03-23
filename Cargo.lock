@@ -86,6 +86,7 @@ dependencies = [
 name = "gca-rt-tx"
 version = "0.1.0"
 dependencies = [
+ "gca-core",
  "primitive-types",
 ]
 
