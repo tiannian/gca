@@ -4,7 +4,7 @@ use gca_core::{Memo, MemoOperation};
 extern "C" {
     fn _memo_count() -> usize;
 
-    fn _memo_get_operation_by_index(idx: usize) -> u64;
+    fn _memo_get_operation_by_index(idx: usize) -> u32;
 
     fn _memo_get_data_len_by_index(idx: usize) -> usize;
 
