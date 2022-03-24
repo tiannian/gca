@@ -1,4 +1,6 @@
 # GCA
 
-> Generic Contract Architecture
+> Generic Contract Architecture for UTXO.
+
+
 
