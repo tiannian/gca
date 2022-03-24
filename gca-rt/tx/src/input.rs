@@ -1,5 +1,5 @@
 use alloc::vec::Vec;
-use gca_core::{InputOperation, OutputId, Input};
+use gca_core::{Input, InputOperation, OutputId};
 
 extern "C" {
     fn _input_get_count() -> usize;
@@ -10,44 +10,40 @@ extern "C" {
 
     fn _input_get_output_id_by_index(idx: usize, txhash_ptr: *mut u8) -> u64;
 
-    fn _input_get_unlock_data_by_index(idx: usize, unlock_data_len: *mut usize) -> *const u8;
+    fn _input_get_unlock_data_len_by_index(idx: usize) -> usize;
+
+    fn _input_get_unlock_data_by_index(idx: usize, data_ptr: *mut u8);
 }
 
 pub fn get_operation(idx: usize) -> InputOperation {
-    let is_ref = unsafe {
-        _input_is_reference_input(idx)
-    };
+    let is_ref = unsafe { _input_is_reference_input(idx) };
 
     if is_ref {
         InputOperation::Reference
     } else {
-        let t = unsafe {
-            _input_get_operation_by_index(idx)
-        };
+        let t = unsafe { _input_get_operation_by_index(idx) };
         InputOperation::Input(t)
     }
 }
 
 pub fn get_unlock_data(idx: usize) -> Vec<u8> {
+    let len = unsafe { _input_get_unlock_data_len_by_index(idx) };
 
-    let mut len: usize = 0;
+    let mut res: Vec<u8> = Vec::with_capacity(len);
 
-    let p = unsafe {
-        let l = &mut len;
+    unsafe {
+        res.set_len(len);
+        _input_get_unlock_data_by_index(idx, res.as_mut_ptr())
+    }
 
-        let ptr = _input_get_unlock_data_by_index(idx, l as *mut usize);
-
-        core::slice::from_raw_parts(ptr, len)
-    };
-
-    p.to_vec()
+    res
 }
 
 pub fn get_output_id(idx: usize) -> OutputId {
     let mut oid = OutputId::default();
 
     let n = unsafe {
-        let s = &mut oid.txhash.0.0;
+        let s = &mut oid.txhash.0 .0;
 
         _input_get_output_id_by_index(idx, s as *mut u8)
     };
@@ -58,9 +54,7 @@ pub fn get_output_id(idx: usize) -> OutputId {
 }
 
 pub fn get_input_count() -> usize {
-    unsafe {
-        _input_get_count()
-    }
+    unsafe { _input_get_count() }
 }
 
 pub fn get_inputs() -> Vec<Input> {
@@ -68,7 +62,7 @@ pub fn get_inputs() -> Vec<Input> {
 
     let count = get_input_count();
 
-    for idx in 0 .. count {
+    for idx in 0..count {
         let operation = get_operation(idx);
         let output_id = get_output_id(idx);
         let unlock = get_unlock_data(idx);
@@ -76,7 +70,7 @@ pub fn get_inputs() -> Vec<Input> {
         let input = Input {
             operation,
             output_id,
-            unlock
+            unlock,
         };
 
         inputs.push(input);
@@ -84,4 +78,3 @@ pub fn get_inputs() -> Vec<Input> {
 
     inputs
 }
-

@@ -16,4 +16,3 @@ pub use output::*;
 
 mod error;
 pub use error::*;
-

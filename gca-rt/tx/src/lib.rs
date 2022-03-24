@@ -5,9 +5,9 @@ extern crate alloc;
 mod txhash;
 pub use txhash::*;
 
-mod input;
-pub use input::*;
+pub mod input;
 
 mod error;
 pub use error::*;
 
+pub mod memo;

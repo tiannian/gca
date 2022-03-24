@@ -15,4 +15,3 @@ pub fn get_txhash() -> H256 {
 
     txhash
 }
-

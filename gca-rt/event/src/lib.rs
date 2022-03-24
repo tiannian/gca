@@ -26,4 +26,3 @@ pub fn emit(name: &str, key: &[u8], value: &[u8]) {
         _emit(name_ptr, key_ptr, key_len, val_ptr, val_len);
     }
 }
-

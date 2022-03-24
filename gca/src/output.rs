@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use crate::{OutputId, OutputOperation, AssetType, Amount};
+use crate::{Amount, AssetType, OutputId, OutputOperation};
 
 pub enum OutputData {
     Token(AssetType, Amount),
@@ -13,4 +13,3 @@ pub struct Output {
     pub verifier: OutputId,
     pub operation: OutputOperation,
 }
-

@@ -1,7 +1,7 @@
-use alloc::{vec::Vec, format, string::String};
+use alloc::{format, string::String, vec::Vec};
 use primitive_types::H256;
 
-use crate::{Txhash, Result, Error};
+use crate::{Error, Result, Txhash};
 
 #[derive(Debug, Default)]
 pub struct OutputId {
@@ -35,10 +35,7 @@ impl OutputId {
 
         let n = u64::from_str_radix(n_str, 10)?;
 
-        Ok(OutputId {
-            txhash,
-            n
-        })
+        Ok(OutputId { txhash, n })
     }
 }
 
@@ -71,4 +68,3 @@ mod tests {
         let _oid = OutputId::from_hex(&s).unwrap();
     }
 }
-

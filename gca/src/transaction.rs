@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use crate::{Txhash, Input, Output, Memo};
+use crate::{Input, Memo, Output, Txhash};
 
 pub struct Transaction {
     pub txhash: Txhash,

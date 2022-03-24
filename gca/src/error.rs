@@ -18,4 +18,3 @@ impl From<core::num::ParseIntError> for Error {
 }
 
 pub type Result<T> = core::result::Result<T, Error>;
-
