@@ -33,7 +33,7 @@ impl OutputId {
 
         let n_str = &s[67..];
 
-        let n = u64::from_str_radix(n_str, 10)?;
+        let n = n_str.parse()?;
 
         Ok(OutputId { txhash, n })
     }

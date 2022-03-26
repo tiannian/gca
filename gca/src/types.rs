@@ -36,5 +36,3 @@ pub struct Timestamp(i64);
 
 #[derive(Debug, Default)]
 pub struct NodeAddress(H160);
-
-

@@ -32,8 +32,8 @@ pub fn get_unlock_data(idx: usize) -> Vec<u8> {
     let mut res: Vec<u8> = Vec::with_capacity(len);
 
     unsafe {
+        _input_get_unlock_data_by_index(idx, res.as_mut_ptr());
         res.set_len(len);
-        _input_get_unlock_data_by_index(idx, res.as_mut_ptr())
     }
 
     res

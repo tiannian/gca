@@ -5,6 +5,10 @@ version = 3
 [[package]]
 name = "block"
 version = "0.1.0"
+dependencies = [
+ "gca-core",
+ "primitive-types",
+]
 
 [[package]]
 name = "byteorder"

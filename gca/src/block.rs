@@ -1,9 +1,6 @@
-use alloc::string::String;
-
-use crate::{BlockHeight, MerkleHash, Timestamp, NodeAddress, BlockHash};
+use crate::{BlockHash, BlockHeight, MerkleHash, NodeAddress, Timestamp};
 
 pub struct BlockHeader {
-    pub chain_id: String,
     pub height: BlockHeight,
     pub time: Option<Timestamp>,
     pub txs_hash: MerkleHash,

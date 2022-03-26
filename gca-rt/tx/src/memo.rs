@@ -27,8 +27,8 @@ pub fn get_data(idx: usize) -> Vec<u8> {
     let mut res = Vec::with_capacity(len);
 
     unsafe {
-        res.set_len(len);
         _memo_get_data_by_index(idx, res.as_mut_ptr());
+        res.set_len(len);
     }
 
     res
