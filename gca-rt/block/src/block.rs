@@ -12,3 +12,11 @@ extern "C" {
 
 // pub fn get_hash(height: BlockHeight)
 
+pub fn get_block() {}
+
+pub fn get_block_by_hash() {}
+
+pub fn get_pending_block() {}
+
+pub fn get_latest_block() {}
+
