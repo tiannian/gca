@@ -12,9 +12,6 @@ extern "C" fn _gca_env_alloc(size: usize) -> *mut u8 {
 #[no_mangle]
 extern "C" fn _gca_env_free(ptr: *mut u8, size: usize) {
     if let Ok(layout) = Layout::array::<u8>(size) {
-        unsafe {
-            alloc::alloc::dealloc(ptr, layout)
-        }
+        unsafe { alloc::alloc::dealloc(ptr, layout) }
     }
 }
-

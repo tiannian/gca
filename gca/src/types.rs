@@ -26,13 +26,13 @@ pub struct OutputOperation(pub u32);
 pub struct Amount(pub u64);
 
 #[derive(Debug, Default)]
-pub struct BlockHeight(pub u64);
+pub struct BlockHeight(pub i64);
 
 #[derive(Debug, Default)]
 pub struct MerkleHash(pub H256);
 
 #[derive(Debug, Default)]
-pub struct Timestamp(i64);
+pub struct Timestamp(pub i64);
 
 #[derive(Debug, Default)]
-pub struct NodeAddress(H160);
+pub struct NodeAddress(pub H160);
