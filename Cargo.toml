@@ -10,5 +10,6 @@ members = [
 
     "gca-runtime",
     "gca-measurer",
+    "gca-evm",
 ]
 
