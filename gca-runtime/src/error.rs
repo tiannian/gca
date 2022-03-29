@@ -4,6 +4,14 @@ pub enum Error {
     ErrWasmiError(wasmi::Error),
 
     ErrIntConvert(std::num::TryFromIntError),
+
+    ErrInputsCount,
+    ErrMustBeOperationInput,
+    ErrNoUnspentOutputPreLoad,
+    ErrOnlyDataCanLoad,
+    ErrWasmNoMemory,
+    ErrWasmAllocError,
+    ErrReturnCode,
 }
 
 impl From<std::num::TryFromIntError> for Error {

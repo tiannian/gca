@@ -20,3 +20,15 @@ pub struct FuncDefine {
     pub parmas: Vec<ValTy>,
     pub ret: Option<ValTy>,
 }
+
+pub struct HostInfo<'a, H> {
+    pub name: &'a str,
+    pub host: H,
+}
+
+
+pub struct ModuleInfo<'a, M> {
+    pub name: &'a str,
+    pub module: &'a M,
+}
+

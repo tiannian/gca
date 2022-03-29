@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display};
 
-use crate::{FuncDefine, Result, Val};
+use crate::{FuncDefine, Result, Val, HostInfo, ModuleInfo};
 
 pub trait Module: Sized {
     fn load_bytes(bytes: impl AsRef<[u8]>) -> Result<Self>;
@@ -22,7 +22,7 @@ pub trait Host {
     fn resolve_functions(&self) -> &[FuncDefine];
 
     fn call_func(
-        &mut self,
+        &self,
         name: &str,
         args: &[Val],
     ) -> std::result::Result<Option<Val>, Self::Error>;
@@ -44,11 +44,11 @@ pub trait Backend<H: Host> {
     type Host: Host;
 
     // Create new wasm backend from host functions
-    fn new(host: (&str, H)) -> Self;
+    fn new(host: &[HostInfo<'_, H>]) -> Self;
 
     fn instance(
         &mut self,
         module: &Self::Module,
-        deps: &[(&str, &Self::Module)],
+        deps: &[ModuleInfo<'_, Self::Module>],
     ) -> Result<Self::Instance>;
 }
