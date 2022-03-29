@@ -1,3 +1,4 @@
+#[derive(Debug, Clone)]
 pub enum Val {
     I32(i32),
     I64(i64),
@@ -5,9 +6,17 @@ pub enum Val {
     F64(u64),
 }
 
+#[derive(Debug, Clone)]
 pub enum ValTy {
     I32,
     I64,
     F32,
     F64,
+}
+
+#[derive(Debug, Clone)]
+pub struct FuncDefine {
+    pub name: &'static str,
+    pub parmas: Vec<ValTy>,
+    pub ret: Option<ValTy>,
 }

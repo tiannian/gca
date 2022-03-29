@@ -8,6 +8,8 @@ extern "C" {
 
     fn _input_is_reference_input(idx: usize) -> bool;
 
+    fn _input_get_reference_by_index(idx: usize) -> u32;
+
     fn _input_get_output_id_by_index(idx: usize, txhash_ptr: *mut u8) -> u64;
 
     fn _input_get_unlock_data_len_by_index(idx: usize) -> usize;
@@ -19,7 +21,8 @@ pub fn get_operation(idx: usize) -> InputOperation {
     let is_ref = unsafe { _input_is_reference_input(idx) };
 
     if is_ref {
-        InputOperation::Reference
+        let t = unsafe { _input_get_reference_by_index(idx) };
+        InputOperation::Reference(t)
     } else {
         let t = unsafe { _input_get_operation_by_index(idx) };
         InputOperation::Input(t)

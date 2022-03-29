@@ -1,37 +1,31 @@
-use std::path::Path;
+use std::fmt::{Debug, Display};
 
-use crate::{Result, Val, ValTy};
+use crate::{FuncDefine, Result, Val};
 
 pub trait Module: Sized {
-    fn load_file(file: impl AsRef<Path>) -> Result<Self>;
-
     fn load_bytes(bytes: impl AsRef<[u8]>) -> Result<Self>;
 }
 
-pub trait Instance: Sized {
+pub trait Instance<H: Host>: Sized {
     type Module: Module;
-
-    type Function: Function;
 
     type Memory: Memory;
 
-    type Host: Host;
+    fn call_func(&self, name: &str, parmas: &[Val]) -> Result<Option<Val>>;
 
-    fn new(module: &Self::Module, deps: &[Self::Module], host: &[Self::Host]) -> Result<Self>;
-
-    fn get_function(&self) -> Option<Self::Function>;
-
-    fn get_memory(&self) -> Option<Self::Memory>;
+    fn get_memory(&self, name: &str) -> Option<Self::Memory>;
 }
 
 pub trait Host {
-    fn resolve_func(args: &[ValTy], ret: Option<ValTy>) -> Result<usize>;
+    type Error: Debug + Display;
 
-    fn call_func(args: &[Val]) -> Result<Val>;
-}
+    fn resolve_functions(&self) -> &[FuncDefine];
 
-pub trait Function {
-    fn call(args: &[Val]) -> Option<Val>;
+    fn call_func(
+        &mut self,
+        name: &str,
+        args: &[Val],
+    ) -> std::result::Result<Option<Val>, Self::Error>;
 }
 
 pub trait Memory {
@@ -40,19 +34,17 @@ pub trait Memory {
     fn write(&self, offset: usize, buffer: &[u8]) -> Result<()>;
 }
 
-pub trait Backend {
+pub trait Backend<H: Host> {
     type Module: Module;
 
-    type Instance: Instance<
-        Module = Self::Module,
-        Function = Self::Function,
-        Memory = Self::Memory,
-        Host = Self::Host,
-    >;
-
-    type Function: Function;
+    type Instance: Instance<H, Module = Self::Module, Memory = Self::Memory>;
 
     type Memory: Memory;
 
     type Host: Host;
+
+    // Create new wasm backend from host functions
+    fn new(host: (&str, H)) -> Self;
+
+    fn instance(&mut self, module: &Self::Module) -> Result<Self::Instance>;
 }
