@@ -15,7 +15,9 @@ pub trait Instance: Sized {
 
     type Memory: Memory;
 
-    fn new(module: &Self::Module, deps: &[Self::Module], host: &[Self::Function]) -> Result<Self>;
+    type Host: Host;
+
+    fn new(module: &Self::Module, deps: &[Self::Module], host: &[Self::Host]) -> Result<Self>;
 
     fn get_function(&self) -> Option<Self::Function>;
 
@@ -41,7 +43,16 @@ pub trait Memory {
 pub trait Backend {
     type Module: Module;
 
-    type Instance: Instance<Module = Self::Module>;
+    type Instance: Instance<
+        Module = Self::Module,
+        Function = Self::Function,
+        Memory = Self::Memory,
+        Host = Self::Host,
+    >;
 
-    type Function;
+    type Function: Function;
+
+    type Memory: Memory;
+
+    type Host: Host;
 }
