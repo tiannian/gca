@@ -1,6 +1,6 @@
 use std::{marker::PhantomData, mem, collections::BTreeMap};
 
-use gca_core::{Block, Transaction, OutputId, Output, InputOperation, OutputData};
+use gca_core::{Block, Transaction, OutputId, Output, InputOperation, OutputData, OutputOperation};
 
 use crate::{Backend, BlockchainEnv, Host, Result, Error, Module, Instance, Val, Memory};
 
@@ -32,7 +32,7 @@ where
     }
 
     /// Validate this transaction's all input is unlocked?.
-    pub fn validate_by_index(&self, idx: usize) -> Result<i32> {
+    pub fn unlock_by_index(&self, idx: usize) -> Result<i32> {
         if let Some(input) = self.transaction.inputs.get(idx) {
             // try to get input's output.
             if !matches!(input.operation, InputOperation::Input(_)) {
@@ -44,7 +44,7 @@ where
                 if let Some(lock_output) = self.outputs.get(&output.locker) {
                     if let OutputData::Data(code) = &lock_output.data {
                         let data = &input.unlock;
-                        Ok(self.validate(code, data)?)
+                        Ok(self.unlock(code, data)?)
                     } else {
                         return Err(Error::ErrOnlyDataCanLoad)
                     }
@@ -60,7 +60,7 @@ where
         }
     }
 
-    fn validate(&self, code: &[u8], data: &[u8]) -> Result<i32> {
+    fn unlock(&self, code: &[u8], data: &[u8]) -> Result<i32> {
         // build env and tx backend.
         let mut backend = B::new(&[]);
 
@@ -91,6 +91,13 @@ where
         } else {
             Err(Error::ErrWasmNoMemory)
         }
+    }
 
+    pub fn all_operation() {}
+
+    pub fn build_sub_transaction(operation: OutputOperation) {}
+
+    pub fn verify_sub_transaction(&self, index: usize) -> Result<i32> {
+        Ok(0)
     }
 }
