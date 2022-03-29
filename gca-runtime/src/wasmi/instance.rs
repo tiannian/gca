@@ -49,7 +49,7 @@ mod wrapper {
 
 pub struct WasmiInstance<'a, H> {
     pub(crate) instance: wasmi::ModuleRef,
-    pub(crate) host: &'a mut H
+    pub(crate) host: &'a mut H,
 }
 
 impl<'a, H> Instance<H> for WasmiInstance<'a, H>
@@ -60,21 +60,21 @@ where
 
     type Module = WasmiModule;
 
-//     fn new(module: &Self::Module, deps: &[(&str, Self)], host_name: &str, host: H) -> Result<Self> {
-        // let mut imports = wasmi::ImportsBuilder::new();
-        //
-        // for (s, i) in deps {
-        //     imports.push_resolver(*s, &i.instance);
-        // }
-        //
-        // let h = wrapper::HostWrapper::new(&host);
-        //
-        // imports.push_resolver(host_name, &h);
-        //
-        // let instance = wasmi::ModuleInstance::new(&module.m, &imports)?.assert_no_start();
-        //
-        // Ok(WasmiInstance { instance })
-//     }
+    //     fn new(module: &Self::Module, deps: &[(&str, Self)], host_name: &str, host: H) -> Result<Self> {
+    // let mut imports = wasmi::ImportsBuilder::new();
+    //
+    // for (s, i) in deps {
+    //     imports.push_resolver(*s, &i.instance);
+    // }
+    //
+    // let h = wrapper::HostWrapper::new(&host);
+    //
+    // imports.push_resolver(host_name, &h);
+    //
+    // let instance = wasmi::ModuleInstance::new(&module.m, &imports)?.assert_no_start();
+    //
+    // Ok(WasmiInstance { instance })
+    //     }
 
     fn call_func(&self, name: &str, parmas: &[Val]) -> Result<Option<Val>> {
         let args: Vec<wasmi::RuntimeValue> = parmas
@@ -89,15 +89,12 @@ where
 
     fn get_memory(&self, name: &str) -> Option<Self::Memory> {
         if let Some(wasmi::ExternVal::Memory(m)) = self.instance.export_by_name(name) {
-            Some(WasmiMemory {
-                m
-            })
+            Some(WasmiMemory { m })
         } else {
             None
         }
     }
 }
-
 
 impl From<Val> for wasmi::RuntimeValue {
     fn from(e: Val) -> Self {

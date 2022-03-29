@@ -46,5 +46,9 @@ pub trait Backend<H: Host> {
     // Create new wasm backend from host functions
     fn new(host: (&str, H)) -> Self;
 
-    fn instance(&mut self, module: &Self::Module) -> Result<Self::Instance>;
+    fn instance(
+        &mut self,
+        module: &Self::Module,
+        deps: &[(&str, &Self::Module)],
+    ) -> Result<Self::Instance>;
 }
