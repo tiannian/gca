@@ -1,5 +1,5 @@
 use alloc::vec::Vec;
-use gca_core::{Amount, AssetType, Output, OutputData, OutputId, OutputOperation};
+use gca_core::{Amount, Output, OutputData, OutputId, OutputOperation};
 
 extern "C" {
     fn _output_get_count() -> usize;
@@ -10,9 +10,11 @@ extern "C" {
 
     fn _output_get_verifier_by_index(idx: usize, txhash_ptr: *mut u8) -> u64;
 
+    fn _output_is_some_verifier_by_index(idx: usize) -> bool;
+
     fn _output_is_token_by_index(idx: usize) -> bool;
 
-    fn _output_get_token_by_index(idx: usize, asset_type: *mut u8) -> u64;
+    fn _output_get_token_by_index(idx: usize) -> u64;
 
     fn _output_get_data_len_by_index(idx: usize) -> usize;
 
@@ -41,30 +43,32 @@ pub fn get_locker(idx: usize) -> OutputId {
     output_id
 }
 
-pub fn get_verifier(idx: usize) -> OutputId {
-    let mut output_id = OutputId::default();
+pub fn get_verifier(idx: usize) -> Option<OutputId> {
+    let is_some = unsafe { _output_is_some_verifier_by_index(idx) };
 
-    let txhash = &mut output_id.txhash.0 .0;
+    if is_some {
+        let mut output_id = OutputId::default();
 
-    let n = unsafe { _output_get_verifier_by_index(idx, txhash as *mut u8) };
+        let txhash = &mut output_id.txhash.0 .0;
 
-    output_id.n = n;
+        let n = unsafe { _output_get_verifier_by_index(idx, txhash as *mut u8) };
 
-    output_id
+        output_id.n = n;
+
+        Some(output_id)
+    } else {
+        None
+    }
 }
 
 pub fn is_token(idx: usize) -> bool {
     unsafe { _output_is_token_by_index(idx) }
 }
 
-pub fn get_token(idx: usize) -> (AssetType, Amount) {
-    let mut asset = AssetType::default();
+pub fn get_token(idx: usize) -> Amount {
+    let amount = unsafe { _output_get_token_by_index(idx) };
 
-    let asset_type = &mut asset.0 .0;
-
-    let amount = unsafe { _output_get_token_by_index(idx, asset_type as *mut u8) };
-
-    (asset, Amount(amount))
+    Amount(amount)
 }
 
 pub fn get_data(idx: usize) -> Vec<u8> {
@@ -84,8 +88,8 @@ pub fn get_data(idx: usize) -> Vec<u8> {
 
 pub fn get_output_data(idx: usize) -> OutputData {
     if is_token(idx) {
-        let (a, b) = get_token(idx);
-        OutputData::Token(a, b)
+        let b = get_token(idx);
+        OutputData::NativeToken(b)
     } else {
         OutputData::Data(get_data(idx))
     }

@@ -1,31 +1,28 @@
-use std::{marker::PhantomData, mem, collections::BTreeMap};
+use std::{collections::BTreeMap, marker::PhantomData};
 
-use gca_core::{Block, Transaction, OutputId, Output, InputOperation, OutputData, OutputOperation};
+use gca_core::{Block, InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction};
 
-use crate::{Backend, BlockchainEnv, Host, Result, Error, Module, Instance, Val, Memory};
+use crate::{Backend, BlockchainEnv, Error, Host, Instance, Memory, Module, Result, Val};
 
-pub struct Executor<B, H, E> {
-    block: Block,
-    env: E,
+pub struct Executor<B, H> {
     transaction: Transaction,
     pub outputs: BTreeMap<OutputId, Output>,
+    pub operations: BTreeMap<OutputOperation, OutputId>,
     marker_h: PhantomData<H>,
     marker_b: PhantomData<B>,
 }
 
-impl<B, H, E> Executor<B, H, E>
+impl<B, H> Executor<B, H>
 where
     B: Backend<H>,
     H: Host,
-    E: BlockchainEnv,
 {
     // Create a new executor to execute transaction.
-    pub fn new(transaction: Transaction, block: Block, env: E) -> Self {
+    pub fn new(transaction: Transaction) -> Self {
         Self {
             transaction,
-            block,
-            env,
             outputs: BTreeMap::new(),
+            operations: BTreeMap::new(),
             marker_h: PhantomData,
             marker_b: PhantomData,
         }
@@ -46,14 +43,13 @@ where
                         let data = &input.unlock;
                         Ok(self.unlock(code, data)?)
                     } else {
-                        return Err(Error::ErrOnlyDataCanLoad)
+                        return Err(Error::ErrOnlyDataCanLoad);
                     }
                 } else {
-                    return Err(Error::ErrNoUnspentOutputPreLoad)
+                    return Err(Error::ErrNoUnspentOutputPreLoad);
                 }
-
             } else {
-                return Err(Error::ErrNoUnspentOutputPreLoad)
+                return Err(Error::ErrNoUnspentOutputPreLoad);
             }
         } else {
             Err(Error::ErrInputsCount)
@@ -80,7 +76,9 @@ where
 
                 // call entry.
 
-                if let Some(Val::I32(ret_code)) = instance.call_func("_gca_unlock_entry", &[Val::I32(ptr)])? {
+                if let Some(Val::I32(ret_code)) =
+                    instance.call_func("_gca_unlock_entry", &[Val::I32(ptr)])?
+                {
                     Ok(ret_code)
                 } else {
                     Err(Error::ErrReturnCode)
@@ -93,11 +91,45 @@ where
         }
     }
 
-    pub fn all_operation() {}
+    pub fn verify_operation(&self, operation: OutputOperation) -> Result<i32> {
+        // get output.
+        if let Some(output_id) = self.operations.get(&operation) {
+            if let Some(output) = self.outputs.get(output_id) {
+                if let OutputData::Data(code) = &output.data {
+                    self.verify_operation_script(&code)
+                } else {
+                    return Err(Error::ErrOnlyDataCanLoad);
+                }
+            } else {
+                Err(Error::ErrNoUnspentOutputPreLoad)
+            }
+        } else {
+            Err(Error::ErrNoOperation)
+        }
+    }
 
-    pub fn build_sub_transaction(operation: OutputOperation) {}
+    fn verify_operation_script(&self, code: &[u8]) -> Result<i32> {
+        // TODO: build all host in backend.
+        let mut backend = B::new(&[]);
+
+        let module = B::Module::load_bytes(code)?;
+
+        let instance = backend.instance(&module, &[])?;
+
+        if let Some(Val::I32(i)) = instance.call_func("_gca_operation_entry", &[])? {
+            Ok(i)
+        } else {
+            Err(Error::ErrReturnCode)
+        }
+    }
 
     pub fn verify_sub_transaction(&self, index: usize) -> Result<i32> {
-        Ok(0)
+        if let Some(output) = self.transaction.outputs.get(index) {
+
+            Ok(0)
+
+        } else {
+            Err(Error::ErrNoUnspentOutputPreLoad)
+        }
     }
 }

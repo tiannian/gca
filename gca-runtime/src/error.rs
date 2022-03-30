@@ -12,6 +12,7 @@ pub enum Error {
     ErrWasmNoMemory,
     ErrWasmAllocError,
     ErrReturnCode,
+    ErrNoOperation,
 }
 
 impl From<std::num::TryFromIntError> for Error {

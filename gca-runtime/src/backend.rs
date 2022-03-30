@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display};
 
-use crate::{FuncDefine, Result, Val, HostInfo, ModuleInfo};
+use crate::{FuncDefine, HostInfo, ModuleInfo, Result, Val};
 
 pub trait Module: Sized {
     fn load_bytes(bytes: impl AsRef<[u8]>) -> Result<Self>;
@@ -21,11 +21,7 @@ pub trait Host {
 
     fn resolve_functions(&self) -> &[FuncDefine];
 
-    fn call_func(
-        &self,
-        name: &str,
-        args: &[Val],
-    ) -> std::result::Result<Option<Val>, Self::Error>;
+    fn call_func(&self, name: &str, args: &[Val]) -> std::result::Result<Option<Val>, Self::Error>;
 }
 
 pub trait Memory {

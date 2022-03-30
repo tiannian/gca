@@ -1,15 +1,15 @@
 use alloc::vec::Vec;
 
-use crate::{Amount, AssetType, OutputId, OutputOperation};
+use crate::{Amount, OutputId, OutputOperation};
 
 pub enum OutputData {
-    Token(AssetType, Amount),
+    NativeToken(Amount),
     Data(Vec<u8>),
 }
 
 pub struct Output {
     pub data: OutputData,
     pub locker: OutputId,
-    pub verifier: OutputId,
+    pub verifier: Option<OutputId>,
     pub operation: OutputOperation,
 }

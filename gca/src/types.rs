@@ -16,10 +16,7 @@ pub struct Memo {
     pub data: Vec<u8>,
 }
 
-#[derive(Debug, Default)]
-pub struct AssetType(pub H160);
-
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, PartialOrd, Eq, Ord)]
 pub struct OutputOperation(pub u32);
 
 #[derive(Debug, Default)]
