@@ -3,7 +3,7 @@ use primitive_types::H256;
 
 use crate::{Error, Result, Txhash};
 
-#[derive(Debug, Default, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct OutputId {
     pub txhash: Txhash,
     pub n: u64,

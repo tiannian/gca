@@ -1,13 +1,14 @@
 use std::{collections::BTreeMap, marker::PhantomData};
 
-use gca_core::{Block, InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction};
+use gca_core::{InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction};
 
-use crate::{Backend, BlockchainEnv, Error, Host, Instance, Memory, Module, Result, Val};
+use crate::{Backend, Error, Host, Instance, Memory, Module, Result, Val};
 
 pub struct Executor<B, H> {
     transaction: Transaction,
     pub outputs: BTreeMap<OutputId, Output>,
     pub operations: BTreeMap<OutputOperation, OutputId>,
+    reference: BTreeMap<u32, OutputId>,
     marker_h: PhantomData<H>,
     marker_b: PhantomData<B>,
 }
@@ -19,8 +20,17 @@ where
 {
     // Create a new executor to execute transaction.
     pub fn new(transaction: Transaction) -> Self {
+        let mut reference = BTreeMap::new();
+
+        for input in &transaction.inputs {
+            if let InputOperation::Reference(i) = input.operation {
+                reference.insert(i, input.output_id.clone());
+            }
+        }
+
         Self {
             transaction,
+            reference,
             outputs: BTreeMap::new(),
             operations: BTreeMap::new(),
             marker_h: PhantomData,
@@ -43,13 +53,13 @@ where
                         let data = &input.unlock;
                         Ok(self.unlock(code, data)?)
                     } else {
-                        return Err(Error::ErrOnlyDataCanLoad);
+                        Err(Error::ErrOnlyDataCanLoad)
                     }
                 } else {
-                    return Err(Error::ErrNoUnspentOutputPreLoad);
+                    Err(Error::ErrNoUnspentOutputPreLoad)
                 }
             } else {
-                return Err(Error::ErrNoUnspentOutputPreLoad);
+                Err(Error::ErrNoUnspentOutputPreLoad)
             }
         } else {
             Err(Error::ErrInputsCount)
@@ -96,9 +106,9 @@ where
         if let Some(output_id) = self.operations.get(&operation) {
             if let Some(output) = self.outputs.get(output_id) {
                 if let OutputData::Data(code) = &output.data {
-                    self.verify_operation_script(&code)
+                    self.verify_operation_script(code)
                 } else {
-                    return Err(Error::ErrOnlyDataCanLoad);
+                    Err(Error::ErrOnlyDataCanLoad)
                 }
             } else {
                 Err(Error::ErrNoUnspentOutputPreLoad)
@@ -123,13 +133,26 @@ where
         }
     }
 
-    pub fn verify_sub_transaction(&self, index: usize) -> Result<i32> {
+    pub fn verify_output(&self, index: usize) -> Result<i32> {
         if let Some(output) = self.transaction.outputs.get(index) {
-
+            if let Some(verifier) = &output.verifier {
+                if let Some(i) = self.outputs.get(verifier) {
+                    if let OutputData::Data(code) = &i.data {
+                        return self.verify_output_script(code)
+                    } else {
+                        return Err(Error::ErrOnlyDataCanLoad)
+                    }
+                }
+                return Ok(0)
+            }
             Ok(0)
-
         } else {
             Err(Error::ErrNoUnspentOutputPreLoad)
         }
+    }
+
+    fn verify_output_script(&self, code: &[u8]) -> Result<i32> {
+        // Load dep module.
+        Ok(0)
     }
 }

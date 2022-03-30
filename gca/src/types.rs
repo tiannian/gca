@@ -4,7 +4,7 @@ use primitive_types::{H160, H256};
 #[derive(Debug, Default)]
 pub struct BlockHash(pub H256);
 
-#[derive(Debug, Default, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Txhash(pub H256);
 
 #[derive(Debug, Default)]
