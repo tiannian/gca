@@ -6,9 +6,7 @@ extern "C" {
 
     fn _memo_get_operation_by_index(idx: usize) -> u32;
 
-    fn _memo_get_data_len_by_index(idx: usize) -> usize;
-
-    fn _memo_get_data_by_index(idx: usize, data_ptr: *mut u8);
+    fn _memo_get_data_by_index(idx: usize, len: *mut usize) -> *const u8;
 }
 
 pub fn get_memo_count() -> usize {
@@ -22,16 +20,14 @@ pub fn get_operation(idx: usize) -> MemoOperation {
 }
 
 pub fn get_data(idx: usize) -> Vec<u8> {
-    let len = unsafe { _memo_get_data_len_by_index(idx) };
+    let mut len = 0usize;
 
-    let mut res = Vec::with_capacity(len);
+    let ds = unsafe {
+        let ptr = _memo_get_data_by_index(idx,&mut len as *mut usize);
+        core::slice::from_raw_parts(ptr, len)
+    };
 
-    unsafe {
-        _memo_get_data_by_index(idx, res.as_mut_ptr());
-        res.set_len(len);
-    }
-
-    res
+    Vec::from(ds)
 }
 
 pub fn get_memos() -> Vec<Memo> {

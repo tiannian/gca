@@ -40,11 +40,8 @@ pub fn get_unlock_data(idx: usize) -> Vec<u8> {
 
     let mut len = 0usize;
 
-    let ptr = unsafe {
-        _input_get_unlock_data_by_index(idx, &mut len as *mut usize)
-    };
-
     let ds = unsafe {
+        let ptr = _input_get_unlock_data_by_index(idx, &mut len as *mut usize);
         core::slice::from_raw_parts(ptr, len)
     };
 

@@ -16,9 +16,7 @@ extern "C" {
 
     fn _output_get_token_by_index(idx: usize) -> u64;
 
-    fn _output_get_data_len_by_index(idx: usize) -> usize;
-
-    fn _output_get_data_by_index(idx: usize, data_ptr: *mut u8);
+    fn _output_get_data_by_index(idx: usize, data_ptr: *mut usize) -> *const u8;
 }
 
 pub fn get_count() -> usize {
@@ -72,18 +70,14 @@ pub fn get_token(idx: usize) -> Amount {
 }
 
 pub fn get_data(idx: usize) -> Vec<u8> {
-    let len = unsafe { _output_get_data_len_by_index(idx) };
+    let mut len = 0usize;
 
-    let mut data = Vec::with_capacity(len);
+    let ds = unsafe {
+        let data = _output_get_data_by_index(idx, &mut len as *mut usize);
+        core::slice::from_raw_parts(data, len)
+    };
 
-    if len != 0 {
-        unsafe {
-            data.set_len(len);
-            _output_get_data_by_index(idx, data.as_mut_ptr())
-        }
-    }
-
-    data
+    Vec::from(ds)
 }
 
 pub fn get_output_data(idx: usize) -> OutputData {
