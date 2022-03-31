@@ -41,7 +41,7 @@ impl OutputId {
 
 pub enum InputOperation {
     Input(u32),
-    Reference(u32),
+    Reference(String, u32),
 }
 
 pub struct Input {

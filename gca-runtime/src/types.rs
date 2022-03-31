@@ -28,5 +28,5 @@ pub struct HostInfo<'a, H> {
 
 pub struct ModuleInfo<'a, M> {
     pub name: &'a str,
-    pub module: &'a M,
+    pub module: M,
 }

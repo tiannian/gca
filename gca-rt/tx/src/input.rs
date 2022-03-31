@@ -1,4 +1,5 @@
-use alloc::vec::Vec;
+use alloc::{vec::Vec, string::String};
+use cstr_core::CStr;
 use gca_core::{Input, InputOperation, OutputId};
 
 extern "C" {
@@ -10,19 +11,25 @@ extern "C" {
 
     fn _input_get_reference_by_index(idx: usize) -> u32;
 
+    fn _input_get_reference_name_by_index(idx: usize) -> *const i8;
+
     fn _input_get_output_id_by_index(idx: usize, txhash_ptr: *mut u8) -> u64;
 
-    fn _input_get_unlock_data_len_by_index(idx: usize) -> usize;
-
-    fn _input_get_unlock_data_by_index(idx: usize, data_ptr: *mut u8);
+    fn _input_get_unlock_data_by_index(idx: usize, data_len: *mut usize) -> *const u8;
 }
 
 pub fn get_operation(idx: usize) -> InputOperation {
     let is_ref = unsafe { _input_is_reference_input(idx) };
 
     if is_ref {
+        let name_cstr = unsafe {
+            let ptr = _input_get_reference_name_by_index(idx);
+
+            CStr::from_ptr(ptr)
+        };
+
         let t = unsafe { _input_get_reference_by_index(idx) };
-        InputOperation::Reference(t)
+        InputOperation::Reference(String::from(name_cstr.to_str().unwrap()), t)
     } else {
         let t = unsafe { _input_get_operation_by_index(idx) };
         InputOperation::Input(t)
@@ -30,16 +37,18 @@ pub fn get_operation(idx: usize) -> InputOperation {
 }
 
 pub fn get_unlock_data(idx: usize) -> Vec<u8> {
-    let len = unsafe { _input_get_unlock_data_len_by_index(idx) };
 
-    let mut res: Vec<u8> = Vec::with_capacity(len);
+    let mut len = 0usize;
 
-    unsafe {
-        _input_get_unlock_data_by_index(idx, res.as_mut_ptr());
-        res.set_len(len);
-    }
+    let ptr = unsafe {
+        _input_get_unlock_data_by_index(idx, &mut len as *mut usize)
+    };
 
-    res
+    let ds = unsafe {
+        core::slice::from_raw_parts(ptr, len)
+    };
+
+    Vec::from(ds)
 }
 
 pub fn get_output_id(idx: usize) -> OutputId {

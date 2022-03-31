@@ -2,13 +2,13 @@ use std::{collections::BTreeMap, marker::PhantomData};
 
 use gca_core::{InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction};
 
-use crate::{Backend, Error, Host, Instance, Memory, Module, Result, Val};
+use crate::{Backend, Error, Host, Instance, Memory, Module, Result, Val, ModuleInfo};
 
 pub struct Executor<B, H> {
     transaction: Transaction,
     pub outputs: BTreeMap<OutputId, Output>,
     pub operations: BTreeMap<OutputOperation, OutputId>,
-    reference: BTreeMap<u32, OutputId>,
+    reference: BTreeMap<u32, Vec<(String, OutputId)>>,
     marker_h: PhantomData<H>,
     marker_b: PhantomData<B>,
 }
@@ -20,11 +20,17 @@ where
 {
     // Create a new executor to execute transaction.
     pub fn new(transaction: Transaction) -> Self {
-        let mut reference = BTreeMap::new();
+        let mut reference: BTreeMap<u32, Vec<(String, OutputId)>> = BTreeMap::new();
 
         for input in &transaction.inputs {
-            if let InputOperation::Reference(i) = input.operation {
-                reference.insert(i, input.output_id.clone());
+            if let InputOperation::Reference(name, i) = &input.operation {
+                if let Some(v) = reference.get_mut(&i) {
+                    v.push((name.clone(), input.output_id.clone()));
+                } else {
+                    let v = vec![(name.clone(), input.output_id.clone())];
+
+                    reference.insert(*i, v);
+                }
             }
         }
 
@@ -74,47 +80,46 @@ where
 
         let instance = backend.instance(&module, &[])?;
 
-        if let Some(memory) = instance.get_memory("memory") {
-            // alloc memory space.
+        let memory = instance
+            .get_memory("memory")
+            .ok_or(Error::ErrWasmNoMemory)?;
+        // alloc memory space.
 
-            let len: i32 = data.len().try_into()?;
+        let len: i32 = data.len().try_into()?;
 
-            if let Some(Val::I32(ptr)) = instance.call_func("_gca_env_alloc", &[Val::I32(len)])? {
-                let offset: usize = ptr.try_into()?;
+        if let Some(Val::I32(ptr)) = instance.call_func("_gca_env_alloc", &[Val::I32(len)])? {
+            let offset: usize = ptr.try_into()?;
 
-                memory.write(offset, data)?;
+            memory.write(offset, data)?;
 
-                // call entry.
+            // call entry.
 
-                if let Some(Val::I32(ret_code)) =
-                    instance.call_func("_gca_unlock_entry", &[Val::I32(ptr)])?
-                {
-                    Ok(ret_code)
-                } else {
-                    Err(Error::ErrReturnCode)
-                }
+            if let Some(Val::I32(ret_code)) =
+                instance.call_func("_gca_unlock_entry", &[Val::I32(ptr)])?
+            {
+                Ok(ret_code)
             } else {
-                Err(Error::ErrWasmAllocError)
+                Err(Error::ErrReturnCode)
             }
         } else {
-            Err(Error::ErrWasmNoMemory)
+            Err(Error::ErrWasmAllocError)
         }
     }
 
     pub fn verify_operation(&self, operation: OutputOperation) -> Result<i32> {
         // get output.
-        if let Some(output_id) = self.operations.get(&operation) {
-            if let Some(output) = self.outputs.get(output_id) {
-                if let OutputData::Data(code) = &output.data {
-                    self.verify_operation_script(code)
-                } else {
-                    Err(Error::ErrOnlyDataCanLoad)
-                }
-            } else {
-                Err(Error::ErrNoUnspentOutputPreLoad)
-            }
+        let output_id = self
+            .operations
+            .get(&operation)
+            .ok_or(Error::ErrNoOperation)?;
+        let output = self
+            .outputs
+            .get(output_id)
+            .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+        if let OutputData::Data(code) = &output.data {
+            self.verify_operation_script(code)
         } else {
-            Err(Error::ErrNoOperation)
+            Err(Error::ErrOnlyDataCanLoad)
         }
     }
 
@@ -134,25 +139,65 @@ where
     }
 
     pub fn verify_output(&self, index: usize) -> Result<i32> {
-        if let Some(output) = self.transaction.outputs.get(index) {
-            if let Some(verifier) = &output.verifier {
-                if let Some(i) = self.outputs.get(verifier) {
-                    if let OutputData::Data(code) = &i.data {
-                        return self.verify_output_script(code)
-                    } else {
-                        return Err(Error::ErrOnlyDataCanLoad)
-                    }
-                }
-                return Ok(0)
+        let output = self
+            .transaction
+            .outputs
+            .get(index)
+            .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+        if let Some(verifier) = &output.verifier {
+            let i = self
+                .outputs
+                .get(verifier)
+                .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+            if let OutputData::Data(code) = &i.data {
+                self.verify_output_script(index, code)
+            } else {
+                Err(Error::ErrOnlyDataCanLoad)
             }
-            Ok(0)
         } else {
-            Err(Error::ErrNoUnspentOutputPreLoad)
+            Ok(0)
         }
     }
 
-    fn verify_output_script(&self, code: &[u8]) -> Result<i32> {
+    fn verify_output_script(&self, index: usize, code: &[u8]) -> Result<i32> {
+        let mut deps = Vec::new();
+
+        // Add all dependience.
+        let mut backend = B::new(&[]);
+
         // Load dep module.
-        Ok(0)
+        if let Some(v) = self.reference.get(&index.try_into()?) {
+            for (name, output_id) in v {
+                let output = self
+                    .outputs
+                    .get(output_id)
+                    .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+
+                if let OutputData::Data(data) = &output.data {
+                    let module = B::Module::load_bytes(data)?;
+
+                    let module_info = ModuleInfo {
+                        name: &name,
+                        module,
+                    };
+
+                    deps.push(module_info);
+
+                } else {
+                    return Err(Error::ErrOnlyDataCanLoad)
+                }
+            }
+        }
+
+        let module = B::Module::load_bytes(code)?;
+
+        let instance = backend.instance(&module, &deps)?;
+
+        // execute here.
+        if let Some(Val::I32(ret_code)) = instance.call_func("_gca_verifier_entry", &[])? {
+            Ok(ret_code)
+        } else {
+            Err(Error::ErrReturnCode)
+        }
     }
 }
