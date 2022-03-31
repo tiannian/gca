@@ -14,7 +14,7 @@
     - [ ] memory measure
 - [ ] EVM on GCA
 - [ ] ink! on GCA (low proprity).
-- [ ] RT library for wasm binary
+- [X] RT library for wasm binary
     - [X] env: expose malloc/free, `chain_id` or other function
     - [X] block: access block.
     - [X] tx: access current execute transaction.

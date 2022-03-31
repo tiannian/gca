@@ -21,7 +21,7 @@ pub trait Host {
 
     fn resolve_functions(&self) -> &[FuncDefine];
 
-    fn call_func(&self, name: &str, args: &[Val]) -> std::result::Result<Option<Val>, Self::Error>;
+    fn call_func(&mut self, name: &str, args: &[Val]) -> std::result::Result<Option<Val>, Self::Error>;
 }
 
 pub trait Memory {
