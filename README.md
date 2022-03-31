@@ -2,5 +2,24 @@
 
 > Generic Contract Architecture for UTXO.
 
+## Work List
 
+- [X] Define trait of wasm runtime.
+- [ ] Add wasm runtime support.
+    - [ ] wasmi
+    - [ ] wasmtime
+    - [ ] nodejs
+- [ ] Measurer for wasm
+    - [ ] execute opcode measure
+    - [ ] memory measure
+- [ ] EVM on GCA
+- [ ] ink! on GCA (low proprity).
+- [ ] RT library for wasm binary
+    - [X] env: expose malloc/free, `chain_id` or other function
+    - [X] block: access block.
+    - [X] tx: access current execute transaction.
+    - [X] log: support `log` crate.
+    - [X] panic-log: panic info to log.
+    - [X] event: emmit event on 
+- [ ] Host support for RT library.
 
