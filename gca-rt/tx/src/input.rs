@@ -1,4 +1,4 @@
-use alloc::{vec::Vec, string::String};
+use alloc::{string::String, vec::Vec};
 use cstr_core::CStr;
 use gca_core::{Input, InputOperation, OutputId};
 
@@ -37,7 +37,6 @@ pub fn get_operation(idx: usize) -> InputOperation {
 }
 
 pub fn get_unlock_data(idx: usize) -> Vec<u8> {
-
     let mut len = 0usize;
 
     let ds = unsafe {

@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, marker::PhantomData};
 
 use gca_core::{InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction};
 
-use crate::{Backend, Error, Host, Instance, Memory, Module, Result, Val, ModuleInfo};
+use crate::{Backend, Error, Host, Instance, Memory, Module, ModuleInfo, Result, Val};
 
 pub struct Executor<B, H> {
     transaction: Transaction,
@@ -24,7 +24,7 @@ where
 
         for input in &transaction.inputs {
             if let InputOperation::Reference(name, i) = &input.operation {
-                if let Some(v) = reference.get_mut(&i) {
+                if let Some(v) = reference.get_mut(i) {
                     v.push((name.clone(), input.output_id.clone()));
                 } else {
                     let v = vec![(name.clone(), input.output_id.clone())];
@@ -177,14 +177,13 @@ where
                     let module = B::Module::load_bytes(data)?;
 
                     let module_info = ModuleInfo {
-                        name: &name,
+                        name,
                         module,
                     };
 
                     deps.push(module_info);
-
                 } else {
-                    return Err(Error::ErrOnlyDataCanLoad)
+                    return Err(Error::ErrOnlyDataCanLoad);
                 }
             }
         }
