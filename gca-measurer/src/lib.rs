@@ -54,13 +54,6 @@ impl GcaMeasurerHost {
 pub enum GcaMeasurerHostError {
     ErrArgumentsFormat,
     ErrCalledName,
-    ErrConvertInt,
-}
-
-impl From<std::num::TryFromIntError> for GcaMeasurerHostError {
-    fn from(_: std::num::TryFromIntError) -> Self {
-        GcaMeasurerHostError::ErrConvertInt
-    }
 }
 
 impl Display for GcaMeasurerHostError {

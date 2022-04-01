@@ -9,9 +9,9 @@
     - [ ] wasmi
     - [ ] wasmtime
     - [ ] nodejs
-- [ ] Measurer for wasm
-    - [ ] execute opcode measure
-    - [ ] memory measure
+- [X] Measurer for wasm
+    - [X] execute opcode measure
+    - [X] memory measure
 - [ ] EVM on GCA
 - [ ] ink! on GCA (low proprity).
 - [X] RT library for wasm binary
