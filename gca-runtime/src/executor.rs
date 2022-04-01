@@ -2,21 +2,19 @@ use std::{collections::BTreeMap, marker::PhantomData};
 
 use gca_core::{InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction};
 
-use crate::{Backend, Error, Host, Instance, Memory, Module, ModuleInfo, Result, Val};
+use crate::{Backend, Error, Instance, Memory, Module, ModuleInfo, Result, Val};
 
-pub struct Executor<B, H> {
+pub struct Executor<B> {
     transaction: Transaction,
     pub outputs: BTreeMap<OutputId, Output>,
     pub operations: BTreeMap<OutputOperation, OutputId>,
     reference: BTreeMap<u32, Vec<(String, OutputId)>>,
-    marker_h: PhantomData<H>,
     marker_b: PhantomData<B>,
 }
 
-impl<B, H> Executor<B, H>
+impl<B> Executor<B>
 where
-    B: Backend<H>,
-    H: Host,
+    B: Backend,
 {
     // Create a new executor to execute transaction.
     pub fn new(transaction: Transaction) -> Self {
@@ -39,13 +37,12 @@ where
             reference,
             outputs: BTreeMap::new(),
             operations: BTreeMap::new(),
-            marker_h: PhantomData,
             marker_b: PhantomData,
         }
     }
 
     /// Validate this transaction's all input is unlocked?.
-    pub fn unlock_by_index(&self, idx: usize) -> Result<i32> {
+    pub fn unlock_by_index(&self, idx: usize, backend: B) -> Result<i32> {
         if let Some(input) = self.transaction.inputs.get(idx) {
             // try to get input's output.
             if !matches!(input.operation, InputOperation::Input(_)) {
@@ -57,7 +54,7 @@ where
                 if let Some(lock_output) = self.outputs.get(&output.locker) {
                     if let OutputData::Data(code) = &lock_output.data {
                         let data = &input.unlock;
-                        Ok(self.unlock(code, data)?)
+                        Ok(self.unlock(code, data, backend)?)
                     } else {
                         Err(Error::ErrOnlyDataCanLoad)
                     }
@@ -72,9 +69,9 @@ where
         }
     }
 
-    fn unlock(&self, code: &[u8], data: &[u8]) -> Result<i32> {
+    fn unlock(&self, code: &[u8], data: &[u8], backend: B) -> Result<i32> {
         // build env and tx backend.
-        let mut backend = B::new(&[]);
+        let mut backend = backend;
 
         let module = B::Module::load_bytes(code)?;
 
@@ -106,7 +103,7 @@ where
         }
     }
 
-    pub fn verify_operation(&self, operation: OutputOperation) -> Result<i32> {
+    pub fn verify_operation(&self, operation: OutputOperation, backend: B) -> Result<i32> {
         // get output.
         let output_id = self
             .operations
@@ -117,15 +114,14 @@ where
             .get(output_id)
             .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
         if let OutputData::Data(code) = &output.data {
-            self.verify_operation_script(code)
+            self.verify_operation_script(code, backend)
         } else {
             Err(Error::ErrOnlyDataCanLoad)
         }
     }
 
-    fn verify_operation_script(&self, code: &[u8]) -> Result<i32> {
-        // TODO: build all host in backend.
-        let mut backend = B::new(&[]);
+    fn verify_operation_script(&self, code: &[u8], backend: B) -> Result<i32> {
+        let mut backend = backend;
 
         let module = B::Module::load_bytes(code)?;
 
@@ -138,7 +134,7 @@ where
         }
     }
 
-    pub fn verify_output(&self, index: usize) -> Result<i32> {
+    pub fn verify_output(&self, index: usize, backend: B) -> Result<i32> {
         let output = self
             .transaction
             .outputs
@@ -150,7 +146,7 @@ where
                 .get(verifier)
                 .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
             if let OutputData::Data(code) = &i.data {
-                self.verify_output_script(index, code)
+                self.verify_output_script(index, code, backend)
             } else {
                 Err(Error::ErrOnlyDataCanLoad)
             }
@@ -159,11 +155,11 @@ where
         }
     }
 
-    fn verify_output_script(&self, index: usize, code: &[u8]) -> Result<i32> {
+    fn verify_output_script(&self, index: usize, code: &[u8], backend: B) -> Result<i32> {
         let mut deps = Vec::new();
 
         // Add all dependience.
-        let mut backend = B::new(&[]);
+        let mut backend = backend;
 
         // Load dep module.
         if let Some(v) = self.reference.get(&index.try_into()?) {
@@ -176,10 +172,7 @@ where
                 if let OutputData::Data(data) = &output.data {
                     let module = B::Module::load_bytes(data)?;
 
-                    let module_info = ModuleInfo {
-                        name,
-                        module,
-                    };
+                    let module_info = ModuleInfo { name, module };
 
                     deps.push(module_info);
                 } else {

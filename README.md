@@ -13,7 +13,6 @@
     - [X] execute opcode measure
     - [X] memory measure
 - [ ] EVM on GCA
-- [ ] ink! on GCA (low proprity).
 - [X] RT library for wasm binary
     - [X] env: expose malloc/free, `chain_id` or other function
     - [X] block: access block.

@@ -1,5 +1,6 @@
-use std::fmt::Display;
+use std::{fmt::Display, marker::PhantomData};
 
+use gca_runtime::Memory;
 pub use pwasm_utils::rules::Rules;
 
 #[derive(Debug)]
@@ -30,18 +31,20 @@ pub fn inject_gas(code: &[u8], rules: impl Rules) -> Result<Vec<u8>> {
     Ok(parity_wasm::serialize(module)?)
 }
 
-pub struct GcaMeasurerHost {
+pub struct GcaMeasurerHost<M> {
     gas: u64,
     func_def: Vec<gca_runtime::FuncDefine>,
+    marker_b: PhantomData<M>,
 }
 
-impl GcaMeasurerHost {
+impl<M> GcaMeasurerHost<M> {
     pub fn new() -> Self {
         let func_def = vec![];
 
         Self {
             gas: 0,
             func_def,
+            marker_b: PhantomData,
         }
     }
 
@@ -62,30 +65,36 @@ impl Display for GcaMeasurerHostError {
     }
 }
 
-impl gca_runtime::Host for GcaMeasurerHost {
+impl<M: Memory> gca_runtime::Host<M> for GcaMeasurerHost<M> {
     type Error = GcaMeasurerHostError;
 
     fn resolve_functions(&self) -> &[gca_runtime::FuncDefine] {
         &self.func_def
     }
 
-    fn call_func(&mut self, name: &str, args: &[gca_runtime::Val]) -> std::result::Result<Option<gca_runtime::Val>, Self::Error> {
+    fn set_memory(&mut self, _memory: M) {}
+
+    fn call_func(
+        &mut self,
+        name: &str,
+        args: &[gca_runtime::Val],
+    ) -> std::result::Result<Option<gca_runtime::Val>, Self::Error> {
         if name != "gas" {
-            return Err(GcaMeasurerHostError::ErrCalledName)
+            return Err(GcaMeasurerHostError::ErrCalledName);
         }
 
         if args.len() != 1 {
-            return Err(GcaMeasurerHostError::ErrArgumentsFormat)
+            return Err(GcaMeasurerHostError::ErrArgumentsFormat);
         }
 
         if let Some(gca_runtime::Val::I32(i)) = args.get(0) {
+            // TODO: Add exccess to exit Execute.
             let step_gas = *i as u64;
             self.gas += step_gas;
         } else {
-            return Err(GcaMeasurerHostError::ErrArgumentsFormat)
+            return Err(GcaMeasurerHostError::ErrArgumentsFormat);
         }
 
         Ok(None)
     }
 }
-

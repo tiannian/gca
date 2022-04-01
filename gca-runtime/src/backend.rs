@@ -1,12 +1,12 @@
 use std::fmt::{Debug, Display};
 
-use crate::{FuncDefine, HostInfo, ModuleInfo, Result, Val};
+use crate::{FuncDefine, ModuleInfo, Result, Val};
 
 pub trait Module: Sized {
     fn load_bytes(bytes: impl AsRef<[u8]>) -> Result<Self>;
 }
 
-pub trait Instance<H: Host>: Sized {
+pub trait Instance: Sized {
     type Module: Module;
 
     type Memory: Memory;
@@ -16,12 +16,18 @@ pub trait Instance<H: Host>: Sized {
     fn get_memory(&self, name: &str) -> Option<Self::Memory>;
 }
 
-pub trait Host {
+pub trait Host<M: Memory> {
     type Error: Debug + Display;
 
     fn resolve_functions(&self) -> &[FuncDefine];
 
-    fn call_func(&mut self, name: &str, args: &[Val]) -> std::result::Result<Option<Val>, Self::Error>;
+    fn set_memory(&mut self, memory: M);
+
+    fn call_func(
+        &mut self,
+        name: &str,
+        args: &[Val],
+    ) -> std::result::Result<Option<Val>, Self::Error>;
 }
 
 pub trait Memory {
@@ -30,17 +36,17 @@ pub trait Memory {
     fn write(&self, offset: usize, buffer: &[u8]) -> Result<()>;
 }
 
-pub trait Backend<H: Host> {
+pub trait Backend {
     type Module: Module;
 
-    type Instance: Instance<H, Module = Self::Module, Memory = Self::Memory>;
+    type Instance: Instance<Module = Self::Module, Memory = Self::Memory>;
 
     type Memory: Memory;
 
-    type Host: Host;
-
     // Create new wasm backend from host functions
-    fn new(host: &[HostInfo<'_, H>]) -> Self;
+    fn new() -> Self;
+
+    fn add_host(&mut self, name: &str, host: impl Host<Self::Memory>);
 
     fn instance(
         &mut self,
