@@ -1,5 +1,5 @@
 [package]
-name = "env"
+name = "gca-rt-env"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,11 @@ edition = "2021"
 
 [dependencies]
 cstr_core = "0.2.5"
+
+wee_alloc = { version = "0.4.5", optional = true }
+
+[features]
+default = ["bump"]
+bump = []
+wee-alloc = ["wee_alloc"]
+

@@ -9,3 +9,7 @@ pub use chain_id::*;
 
 mod error;
 pub use error::*;
+
+mod allocator;
+pub use allocator::*;
+
