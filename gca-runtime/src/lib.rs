@@ -15,5 +15,5 @@ pub use env::*;
 
 pub mod helper;
 
-// #[cfg(feature = "wasmi-backend")]
-// pub mod wasmi;
+#[cfg(feature = "wasmi-backend")]
+pub mod wasmi;

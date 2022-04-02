@@ -1,88 +1,25 @@
-use crate::{Host, Instance, Result, Val};
+use crate::{Instance, Result, Val};
 
-use super::{WasmiMemory, WasmiModule};
+use super::{WasmiExternal, WasmiMemory, WasmiModule};
 
-mod wrapper {
-    use std::collections::BTreeMap;
-
-    use crate::Host;
-
-    pub struct HostWrapper {
-        pub(crate) defines_idx: BTreeMap<&'static str, usize>,
-    }
-
-    impl HostWrapper {
-        pub fn new<H: Host>(h: &H) -> Self {
-            let defines = h.resolve_functions();
-
-            let mut defines_idx = BTreeMap::new();
-
-            for i in 0..defines.len() {
-                let name = defines[i].name;
-                defines_idx.insert(name, i);
-            }
-
-            Self { defines_idx }
-        }
-    }
-
-    impl wasmi::ModuleImportResolver for HostWrapper {
-        fn resolve_func(
-            &self,
-            field_name: &str,
-            signature: &wasmi::Signature,
-        ) -> Result<wasmi::FuncRef, wasmi::Error> {
-            if let Some(idx) = self.defines_idx.get(field_name) {
-                // TODO: Check signature here.
-                let func = wasmi::FuncInstance::alloc_host(signature.clone(), *idx);
-
-                Ok(func)
-            } else {
-                Err(wasmi::Error::Instantiation(format!(
-                    "No host function {}",
-                    field_name
-                )))
-            }
-        }
-    }
-}
-
-pub struct WasmiInstance<'a, H> {
+pub struct WasmiInstance {
     pub(crate) instance: wasmi::ModuleRef,
-    pub(crate) host: &'a mut H,
+    pub(crate) external: WasmiExternal,
 }
 
-impl<'a, H> Instance<H> for WasmiInstance<'a, H>
-where
-    H: Host,
-{
+impl Instance for WasmiInstance {
     type Memory = WasmiMemory;
 
     type Module = WasmiModule;
 
-    //     fn new(module: &Self::Module, deps: &[(&str, Self)], host_name: &str, host: H) -> Result<Self> {
-    // let mut imports = wasmi::ImportsBuilder::new();
-    //
-    // for (s, i) in deps {
-    //     imports.push_resolver(*s, &i.instance);
-    // }
-    //
-    // let h = wrapper::HostWrapper::new(&host);
-    //
-    // imports.push_resolver(host_name, &h);
-    //
-    // let instance = wasmi::ModuleInstance::new(&module.m, &imports)?.assert_no_start();
-    //
-    // Ok(WasmiInstance { instance })
-    //     }
-
-    fn call_func(&self, name: &str, parmas: &[Val]) -> Result<Option<Val>> {
+    fn call_func(&mut self, name: &str, parmas: &[Val]) -> Result<Option<Val>> {
         let args: Vec<wasmi::RuntimeValue> = parmas
             .iter()
             .map(|e| wasmi::RuntimeValue::from(e.clone()))
             .collect();
 
-        // self.instance.invoke_export(name, &args, &mut h)?;
+        self.instance
+            .invoke_export(name, &args, &mut self.external)?;
 
         Ok(None)
     }

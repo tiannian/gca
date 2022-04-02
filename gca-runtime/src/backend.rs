@@ -11,7 +11,7 @@ pub trait Instance: Sized {
 
     type Memory: Memory;
 
-    fn call_func(&self, name: &str, parmas: &[Val]) -> Result<Option<Val>>;
+    fn call_func(&mut self, name: &str, parmas: &[Val]) -> Result<Option<Val>>;
 
     fn get_memory(&self, name: &str) -> Option<Self::Memory>;
 }

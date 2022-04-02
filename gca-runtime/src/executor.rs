@@ -75,7 +75,7 @@ where
 
         let module = B::Module::load_bytes(code)?;
 
-        let instance = backend.instance(&module, &[])?;
+        let mut instance = backend.instance(&module, &[])?;
 
         let memory = instance
             .get_memory("memory")
@@ -125,7 +125,7 @@ where
 
         let module = B::Module::load_bytes(code)?;
 
-        let instance = backend.instance(&module, &[])?;
+        let mut instance = backend.instance(&module, &[])?;
 
         if let Some(Val::I32(i)) = instance.call_func("_gca_operation_entry", &[])? {
             Ok(i)
@@ -183,7 +183,7 @@ where
 
         let module = B::Module::load_bytes(code)?;
 
-        let instance = backend.instance(&module, &deps)?;
+        let mut instance = backend.instance(&module, &deps)?;
 
         // execute here.
         if let Some(Val::I32(ret_code)) = instance.call_func("_gca_verifier_entry", &[])? {
