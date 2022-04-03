@@ -4,7 +4,7 @@ use wasmi::{ImportsBuilder, ModuleInstance};
 
 use crate::{Backend, Host, ModuleInfo, Result};
 
-use super::{ModuleHostImport, WasmiExternal, WasmiInstance, WasmiMemory, WasmiModule};
+use super::{ModuleHostImport, WasmiExternal, WasmiInstance, WasmiMemory, WasmiModule, HostImports};
 
 pub struct WasmiBackend {
     pub(crate) host_idxs: BTreeMap<usize, (usize, &'static str)>,
@@ -36,12 +36,11 @@ impl Backend for WasmiBackend {
     ) -> Result<Self::Instance> {
         let external = WasmiExternal {};
 
-        let mut imports = ImportsBuilder::new();
+        let imports = HostImports::new();
 
         for (name, host) in &self.hosts {
-            let import = ModuleHostImport::new(host);
+            let import = ModuleHostImport::new(host.as_ref());
 
-            imports.push_resolver(name, &import);
         }
 
         //         for mi in deps {

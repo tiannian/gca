@@ -41,6 +41,12 @@ impl wasmi::ModuleImportResolver for ModuleHostImport {
 
 pub struct HostImports(pub(crate) BTreeMap<String, ModuleHostImport>);
 
+impl HostImports {
+    pub fn new() -> Self {
+        Self (BTreeMap::new())
+    }
+}
+
 impl wasmi::ImportResolver for HostImports {
     fn resolve_func(
         &self,
