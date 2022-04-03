@@ -1,4 +1,7 @@
-use std::{fmt::{Display, Debug}, marker::PhantomData};
+use std::{
+    fmt::{Debug, Display},
+    marker::PhantomData,
+};
 
 use gca_runtime::Memory;
 pub use pwasm_utils::rules::Rules;
@@ -71,7 +74,7 @@ impl Display for GcaMeasurerHostError {
     }
 }
 
-impl<M: Memory> gca_runtime::Host<M> for GcaMeasurerHost<M> {
+impl<M: Memory + 'static> gca_runtime::Host<M> for GcaMeasurerHost<M> {
     fn resolve_functions(&self) -> &[gca_runtime::FuncDefine] {
         &self.func_def
     }

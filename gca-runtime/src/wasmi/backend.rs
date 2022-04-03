@@ -8,7 +8,7 @@ use super::{ModuleHostImport, WasmiExternal, WasmiInstance, WasmiMemory, WasmiMo
 
 pub struct WasmiBackend {
     pub(crate) host_idxs: BTreeMap<usize, (usize, &'static str)>,
-    pub(crate) hosts: Vec<Box<dyn Host<WasmiMemory>>>,
+    pub(crate) hosts: Vec<(String, Box<dyn Host<WasmiMemory>>)>,
 }
 
 impl Backend for WasmiBackend {
@@ -25,7 +25,9 @@ impl Backend for WasmiBackend {
         }
     }
 
-    fn add_host(&mut self, name: &str, host: impl Host<Self::Memory>) {}
+    fn add_host(&mut self, name: &str, host: impl Host<Self::Memory>) {
+        self.hosts.push((String::from(name), Box::new(host)));
+    }
 
     fn instance(
         &mut self,
@@ -34,11 +36,17 @@ impl Backend for WasmiBackend {
     ) -> Result<Self::Instance> {
         let external = WasmiExternal {};
 
-        let imports = ImportsBuilder::new();
+        let mut imports = ImportsBuilder::new();
 
-        for mi in deps {
-            // imports.builder.push_resolver(mi.name, &mi.module.m);
+        for (name, host) in &self.hosts {
+            let import = ModuleHostImport::new(host);
+
+            imports.push_resolver(name, &import);
         }
+
+        //         for mi in deps {
+        // // imports.builder.push_resolver(mi.name, &mi.module.m);
+        //         }
 
         let instance = ModuleInstance::new(&module.m, &imports)?.assert_no_start();
 

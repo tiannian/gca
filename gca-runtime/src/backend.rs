@@ -16,7 +16,7 @@ pub trait Instance: Sized {
     fn get_memory(&self, name: &str) -> Option<Self::Memory>;
 }
 
-pub trait Host<M: Memory> {
+pub trait Host<M: Memory>: 'static {
     fn resolve_functions(&self) -> &[FuncDefine];
 
     fn set_memory(&mut self, memory: M);
