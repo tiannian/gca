@@ -1,4 +1,4 @@
-use std::{fmt::Display, marker::PhantomData};
+use std::{fmt::{Display, Debug}, marker::PhantomData};
 
 use gca_runtime::Memory;
 pub use pwasm_utils::rules::Rules;
@@ -59,6 +59,12 @@ pub enum GcaMeasurerHostError {
     ErrCalledName,
 }
 
+impl From<GcaMeasurerHostError> for Box<dyn Debug> {
+    fn from(e: GcaMeasurerHostError) -> Self {
+        Box::new(e)
+    }
+}
+
 impl Display for GcaMeasurerHostError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
@@ -66,8 +72,6 @@ impl Display for GcaMeasurerHostError {
 }
 
 impl<M: Memory> gca_runtime::Host<M> for GcaMeasurerHost<M> {
-    type Error = GcaMeasurerHostError;
-
     fn resolve_functions(&self) -> &[gca_runtime::FuncDefine] {
         &self.func_def
     }
@@ -78,13 +82,13 @@ impl<M: Memory> gca_runtime::Host<M> for GcaMeasurerHost<M> {
         &mut self,
         name: &str,
         args: &[gca_runtime::Val],
-    ) -> std::result::Result<Option<gca_runtime::Val>, Self::Error> {
+    ) -> std::result::Result<Option<gca_runtime::Val>, Box<dyn Debug>> {
         if name != "gas" {
-            return Err(GcaMeasurerHostError::ErrCalledName);
+            return Err(GcaMeasurerHostError::ErrCalledName.into());
         }
 
         if args.len() != 1 {
-            return Err(GcaMeasurerHostError::ErrArgumentsFormat);
+            return Err(GcaMeasurerHostError::ErrArgumentsFormat.into());
         }
 
         if let Some(gca_runtime::Val::I32(i)) = args.get(0) {
@@ -92,7 +96,7 @@ impl<M: Memory> gca_runtime::Host<M> for GcaMeasurerHost<M> {
             let step_gas = *i as u64;
             self.gas += step_gas;
         } else {
-            return Err(GcaMeasurerHostError::ErrArgumentsFormat);
+            return Err(GcaMeasurerHostError::ErrArgumentsFormat.into());
         }
 
         Ok(None)

@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 use crate::{FuncDefine, ModuleInfo, Result, Val};
 
@@ -17,8 +17,6 @@ pub trait Instance: Sized {
 }
 
 pub trait Host<M: Memory> {
-    type Error: Debug + Display;
-
     fn resolve_functions(&self) -> &[FuncDefine];
 
     fn set_memory(&mut self, memory: M);
@@ -27,7 +25,7 @@ pub trait Host<M: Memory> {
         &mut self,
         name: &str,
         args: &[Val],
-    ) -> std::result::Result<Option<Val>, Self::Error>;
+    ) -> std::result::Result<Option<Val>, Box<dyn Debug>>;
 }
 
 pub trait Memory {
