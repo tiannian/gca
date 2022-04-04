@@ -47,7 +47,7 @@ pub trait Backend {
     fn add_host(&mut self, name: &str, host: impl Host<Self::Memory>);
 
     fn instance(
-        &mut self,
+        self,
         module: &Self::Module,
         deps: &[ModuleInfo<'_, Self::Module>],
     ) -> Result<Self::Instance>;

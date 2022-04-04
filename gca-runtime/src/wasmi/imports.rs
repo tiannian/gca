@@ -9,17 +9,15 @@ pub enum ModuleHostImport {
     ModuleRef(ModuleRef),
 }
 
-// pub struct ModuleHostImport(pub(crate) BTreeMap<&'static str, usize>);
-
 impl ModuleHostImport {
-    pub fn new_host<M: Memory + 'static>(host: &dyn Host<M>) -> Self {
+    pub fn new_host<M: Memory + 'static>(host: &dyn Host<M>, offset: usize) -> Self {
         let mut inner = BTreeMap::new();
 
         let defines = host.resolve_functions();
 
         for i in 0..defines.len() {
             let define = &defines[i];
-            inner.insert(define.name, i);
+            inner.insert(define.name, i + offset);
         }
 
         Self::Host(inner)
@@ -27,6 +25,13 @@ impl ModuleHostImport {
 
     pub fn new_module(m: ModuleRef) -> Self {
         Self::ModuleRef(m)
+    }
+
+    pub fn get_host_idxs(&self) -> Option<&BTreeMap<&'static str, usize>> {
+        match self {
+            ModuleHostImport::Host(idx) => Some(idx),
+            ModuleHostImport::ModuleRef(_) => None,
+        }
     }
 }
 
@@ -51,7 +56,47 @@ impl wasmi::ModuleImportResolver for ModuleHostImport {
         }
     }
 
-    // Add resolve_other.
+    fn resolve_table(
+        &self,
+        field_name: &str,
+        table_type: &wasmi::TableDescriptor,
+    ) -> Result<wasmi::TableRef, wasmi::Error> {
+        match self {
+            ModuleHostImport::Host(_) => Err(wasmi::Error::Instantiation(format!(
+                "no field: {}",
+                field_name
+            ))),
+            ModuleHostImport::ModuleRef(m) => m.resolve_table(field_name, table_type),
+        }
+    }
+
+    fn resolve_global(
+        &self,
+        field_name: &str,
+        global_type: &wasmi::GlobalDescriptor,
+    ) -> Result<wasmi::GlobalRef, wasmi::Error> {
+        match self {
+            ModuleHostImport::Host(_) => Err(wasmi::Error::Instantiation(format!(
+                "no field: {}",
+                field_name
+            ))),
+            ModuleHostImport::ModuleRef(m) => m.resolve_global(field_name, global_type),
+        }
+    }
+
+    fn resolve_memory(
+        &self,
+        field_name: &str,
+        memory_type: &wasmi::MemoryDescriptor,
+    ) -> Result<wasmi::MemoryRef, wasmi::Error> {
+        match self {
+            ModuleHostImport::Host(_) => Err(wasmi::Error::Instantiation(format!(
+                "no field: {}",
+                field_name
+            ))),
+            ModuleHostImport::ModuleRef(m) => m.resolve_memory(field_name, memory_type),
+        }
+    }
 }
 
 pub struct HostImports(pub(crate) BTreeMap<String, ModuleHostImport>);

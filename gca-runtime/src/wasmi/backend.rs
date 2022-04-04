@@ -32,19 +32,30 @@ impl Backend for WasmiBackend {
     }
 
     fn instance(
-        &mut self,
+        self,
         module: &Self::Module,
         deps: &[ModuleInfo<'_, Self::Module>],
     ) -> Result<Self::Instance> {
-        let external = WasmiExternal {};
+        let mut this = self;
 
         let mut imports = HostImports::new();
 
-        for (name, host) in &self.hosts {
-            let import = ModuleHostImport::new_host(host.as_ref());
+        for i in 0..this.hosts.len() {
+            let (name, host) = &this.hosts[i];
+
+            let import = ModuleHostImport::new_host(host.as_ref(), this.host_idxs.len());
+
+            if let Some(idxs) = import.get_host_idxs() {
+                for (name, idx) in idxs {
+                    this.host_idxs.insert(*idx, (i, name));
+                }
+            }
 
             imports.add_module(&name, import);
         }
+
+        log::info!("Host index map for wasmi:");
+        log::info!("{:#?}", this.host_idxs);
 
         for mi in deps {
             let instance = ModuleInstance::new(&mi.module.m, &imports)?.assert_no_start();
@@ -53,6 +64,19 @@ impl Backend for WasmiBackend {
         }
 
         let instance = ModuleInstance::new(&module.m, &imports)?.assert_no_start();
+
+        let memory = instance.export_by_name("memory");
+
+        if let Some(wasmi::ExternVal::Memory(m)) = memory {
+            for host in &mut this.hosts {
+                host.1.set_memory(WasmiMemory { m: m.clone() })
+            }
+        }
+
+        let external = WasmiExternal {
+            host_idxs: this.host_idxs,
+            hosts: this.hosts,
+        };
 
         Ok(WasmiInstance { external, instance })
     }

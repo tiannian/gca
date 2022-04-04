@@ -71,8 +71,6 @@ where
 
     fn unlock(&self, code: &[u8], data: &[u8], backend: B) -> Result<i32> {
         // build env and tx backend.
-        let mut backend = backend;
-
         let module = B::Module::load_bytes(code)?;
 
         let mut instance = backend.instance(&module, &[])?;
@@ -121,8 +119,6 @@ where
     }
 
     fn verify_operation_script(&self, code: &[u8], backend: B) -> Result<i32> {
-        let mut backend = backend;
-
         let module = B::Module::load_bytes(code)?;
 
         let mut instance = backend.instance(&module, &[])?;
@@ -157,9 +153,6 @@ where
 
     fn verify_output_script(&self, index: usize, code: &[u8], backend: B) -> Result<i32> {
         let mut deps = Vec::new();
-
-        // Add all dependience.
-        let mut backend = backend;
 
         // Load dep module.
         if let Some(v) = self.reference.get(&index.try_into()?) {
