@@ -1,13 +1,18 @@
 use std::collections::BTreeMap;
 
-use wasmi::{FuncRef, ModuleImportResolver, Signature};
+use wasmi::{FuncRef, ModuleImportResolver, ModuleRef, Signature};
 
 use crate::{Host, Memory};
 
-pub struct ModuleHostImport(pub(crate) BTreeMap<&'static str, usize>);
+pub enum ModuleHostImport {
+    Host(BTreeMap<&'static str, usize>),
+    ModuleRef(ModuleRef),
+}
+
+// pub struct ModuleHostImport(pub(crate) BTreeMap<&'static str, usize>);
 
 impl ModuleHostImport {
-    pub fn new<M: Memory + 'static>(host: &dyn Host<M>) -> Self {
+    pub fn new_host<M: Memory + 'static>(host: &dyn Host<M>) -> Self {
         let mut inner = BTreeMap::new();
 
         let defines = host.resolve_functions();
@@ -17,7 +22,11 @@ impl ModuleHostImport {
             inner.insert(define.name, i);
         }
 
-        Self(inner)
+        Self::Host(inner)
+    }
+
+    pub fn new_module(m: ModuleRef) -> Self {
+        Self::ModuleRef(m)
     }
 }
 
@@ -27,23 +36,33 @@ impl wasmi::ModuleImportResolver for ModuleHostImport {
         field_name: &str,
         signature: &Signature,
     ) -> Result<FuncRef, wasmi::Error> {
-        let idx = self
-            .0
-            .get(field_name)
-            .ok_or(wasmi::Error::Instantiation(format!(
-                "Export {} not found",
-                field_name
-            )))?;
+        match self {
+            ModuleHostImport::Host(h) => {
+                let idx = h
+                    .get(field_name)
+                    .ok_or(wasmi::Error::Instantiation(format!(
+                        "Export {} not found",
+                        field_name
+                    )))?;
 
-        Ok(wasmi::FuncInstance::alloc_host(signature.clone(), *idx))
+                Ok(wasmi::FuncInstance::alloc_host(signature.clone(), *idx))
+            }
+            ModuleHostImport::ModuleRef(m) => m.resolve_func(field_name, signature),
+        }
     }
+
+    // Add resolve_other.
 }
 
 pub struct HostImports(pub(crate) BTreeMap<String, ModuleHostImport>);
 
 impl HostImports {
     pub fn new() -> Self {
-        Self (BTreeMap::new())
+        Self(BTreeMap::new())
+    }
+
+    pub fn add_module(&mut self, name: &str, module: ModuleHostImport) {
+        self.0.insert(String::from(name), module);
     }
 }
 
