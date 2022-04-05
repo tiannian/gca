@@ -1,4 +1,5 @@
 [workspace]
 members = [
-
+    "locker-entry",
+    "operation-entry",
 ]

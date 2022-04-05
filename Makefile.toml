@@ -1,0 +1,13 @@
+# [env]
+# CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+# [tasks.build-example]
+#
+# [tasks.test-empty]
+# dependencies = ["build-example"]
+#
+[tasks.test]
+workspace = false
+# dependencies = ["test-empty"]
+# command = "cargo"
+# args = ["test"]
