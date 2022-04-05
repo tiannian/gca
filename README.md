@@ -6,13 +6,12 @@
 
 - [X] Define trait of wasm runtime.
 - [ ] Add wasm runtime support.
-    - [ ] wasmi
+    - [X] wasmi
     - [ ] wasmtime
-    - [ ] nodejs
+    - [ ] javascript
 - [X] Measurer for wasm
     - [X] execute opcode measure
     - [X] memory measure
-- [ ] EVM on GCA
 - [X] RT library for wasm binary
     - [X] env: expose malloc/free, `chain_id` or other function
     - [X] block: access block.
@@ -21,4 +20,9 @@
     - [X] panic-log: panic info to log.
     - [X] event: emmit event on 
 - [ ] Host support for RT library.
+- [ ] Testing and Examples.
+    - [ ] Empty entry function.
+    - [ ] Log.
+    - [ ] Got chainid.
+
 

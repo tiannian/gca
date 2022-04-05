@@ -62,7 +62,7 @@ pub enum GcaMeasurerHostError {
     ErrCalledName,
 }
 
-impl From<GcaMeasurerHostError> for Box<dyn Debug> {
+impl From<GcaMeasurerHostError> for Box<dyn Debug + Send + Sync> {
     fn from(e: GcaMeasurerHostError) -> Self {
         Box::new(e)
     }
@@ -85,7 +85,7 @@ impl<M: Memory + 'static> gca_runtime::Host<M> for GcaMeasurerHost<M> {
         &mut self,
         name: &str,
         args: &[gca_runtime::Val],
-    ) -> std::result::Result<Option<gca_runtime::Val>, Box<dyn Debug>> {
+    ) -> std::result::Result<Option<gca_runtime::Val>, Box<dyn Debug + Send + Sync>> {
         if name != "gas" {
             return Err(GcaMeasurerHostError::ErrCalledName.into());
         }

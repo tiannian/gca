@@ -25,7 +25,7 @@ pub trait Host<M: Memory>: 'static {
         &mut self,
         name: &str,
         args: &[Val],
-    ) -> std::result::Result<Option<Val>, Box<dyn Debug>>;
+    ) -> std::result::Result<Option<Val>, Box<dyn Debug + Sync + Send>>;
 }
 
 pub trait Memory {

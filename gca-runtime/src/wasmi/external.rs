@@ -1,6 +1,9 @@
-use std::{collections::BTreeMap, fmt::Display};
+use std::{
+    collections::BTreeMap,
+    fmt::{Debug, Display},
+};
 
-use wasmi::{Error, HostError, RuntimeArgs, RuntimeValue, Trap, TrapKind};
+use wasmi::{HostError, RuntimeArgs, RuntimeValue, Trap, TrapKind};
 
 use crate::{Host, Val};
 
@@ -9,6 +12,7 @@ use super::WasmiMemory;
 #[derive(Debug)]
 pub enum ExternalError {
     NoTargetIndex,
+    FunctionCallErr(Box<dyn Debug + Sync + Send>),
 }
 
 impl Display for ExternalError {
@@ -40,7 +44,9 @@ impl wasmi::Externals for WasmiExternal {
         let host = self
             .hosts
             .get_mut(*module_idx)
-            .ok_or(Trap::new(TrapKind::Host(Box::new(ExternalError::NoTargetIndex))))?;
+            .ok_or(Trap::new(TrapKind::Host(Box::new(
+                ExternalError::NoTargetIndex,
+            ))))?;
 
         let mut values = Vec::new();
 
@@ -50,8 +56,12 @@ impl wasmi::Externals for WasmiExternal {
             values.push(val);
         }
 
-        // host.1.call_func(name, &values)?;
+        let res = host
+            .1
+            .call_func(name, &values)
+            .map_err(|e| ExternalError::FunctionCallErr(e))?
+            .map(|v| v.into());
 
-        Ok(None)
+        Ok(res)
     }
 }
