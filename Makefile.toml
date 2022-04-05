@@ -1,13 +1,27 @@
-# [env]
-# CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+[tasks.build-example]
+command = "cargo"
+args = ["build", "--manifest-path", "examples/Cargo.toml", "--target", "wasm32-unknown-unknown", "--release"]
 
-# [tasks.build-example]
-#
-# [tasks.test-empty]
-# dependencies = ["build-example"]
-#
+[tasks.test-empty]
+dependencies = ["build-example"]
+
 [tasks.test]
 workspace = false
-# dependencies = ["test-empty"]
-# command = "cargo"
-# args = ["test"]
+dependencies = ["test-empty"]
+command = "cargo"
+args = ["test"]
+
+## Define clean command
+
+[tasks.clean-example]
+command = "cargo"
+args = ["clean", "--manifest-path", "examples/Cargo.toml"]
+
+[tasks.clean-gca]
+command = "cargo"
+args = ["clean"]
+
+[tasks.clean]
+workspace = false
+dependencies = ["clean-example", "clean-gca"]
+

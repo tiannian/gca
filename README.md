@@ -25,4 +25,14 @@
     - [ ] Log.
     - [ ] Got chainid.
 
+## Testing
+
+### Dependience
+
+- cargo-make
+
+``` shell
+$ cargo make test
+```
+
 
