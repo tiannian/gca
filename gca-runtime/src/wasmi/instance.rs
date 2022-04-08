@@ -18,8 +18,10 @@ impl Instance for WasmiInstance {
             .map(|e| wasmi::RuntimeValue::from(e.clone()))
             .collect();
 
-        let ret = self.instance
-            .invoke_export(name, &args, &mut self.external)?.map(|v| Val::from(v));
+        let ret = self
+            .instance
+            .invoke_export(name, &args, &mut self.external)?
+            .map(|v| Val::from(v));
 
         Ok(ret)
     }

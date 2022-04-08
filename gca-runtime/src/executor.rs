@@ -301,9 +301,13 @@ pub mod tests {
         let operation_backend = B::new();
 
         let operation = OutputOperation(0);
-        executor.operations.insert(operation.clone(), wasm_output_id.clone());
+        executor
+            .operations
+            .insert(operation.clone(), wasm_output_id.clone());
 
-        let code = executor.verify_operation(operation, operation_backend).unwrap();
+        let code = executor
+            .verify_operation(operation, operation_backend)
+            .unwrap();
         assert_eq!(code, 0);
 
         let verifier_backend = B::new();

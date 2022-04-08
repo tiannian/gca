@@ -17,3 +17,5 @@ pub mod helper;
 
 #[cfg(feature = "wasmi-backend")]
 pub mod wasmi;
+
+pub mod host;

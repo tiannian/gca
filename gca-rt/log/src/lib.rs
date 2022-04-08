@@ -6,7 +6,7 @@ use cstr_core::c_char;
 use log::{Level, LevelFilter, SetLoggerError};
 
 extern "C" {
-    fn _log(
+    fn _gca_log(
         // level
         level: u8,
         // target
@@ -41,7 +41,7 @@ impl log::Log for Logger {
         let message_ptr = utils::opt_str_to_ptr(record.args().as_str());
 
         unsafe {
-            _log(level, target_ptr, file_ptr, line, message_ptr);
+            _gca_log(level, target_ptr, file_ptr, line, message_ptr);
         }
     }
 

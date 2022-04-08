@@ -23,6 +23,7 @@
 - [ ] Testing and Examples.
     - [X] Empty entry function.
     - [ ] Log.
+    - [ ] Gas measure.
     - [ ] Got chainid.
 
 ## Testing
