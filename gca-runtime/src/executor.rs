@@ -1,21 +1,17 @@
-use std::{collections::BTreeMap, marker::PhantomData};
+use std::collections::BTreeMap;
 
 use gca_core::{InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction};
 
 use crate::{Backend, Error, Instance, Memory, Module, ModuleInfo, Result, Val};
 
-pub struct Executor<B> {
+pub struct Executor {
     transaction: Transaction,
     pub outputs: BTreeMap<OutputId, Output>,
     pub operations: BTreeMap<OutputOperation, OutputId>,
     reference: BTreeMap<u32, Vec<(String, OutputId)>>,
-    marker_b: PhantomData<B>,
 }
 
-impl<B> Executor<B>
-where
-    B: Backend,
-{
+impl Executor {
     // Create a new executor to execute transaction.
     pub fn new(transaction: Transaction) -> Self {
         let mut reference: BTreeMap<u32, Vec<(String, OutputId)>> = BTreeMap::new();
@@ -37,12 +33,11 @@ where
             reference,
             outputs: BTreeMap::new(),
             operations: BTreeMap::new(),
-            marker_b: PhantomData,
         }
     }
 
     /// Validate this transaction's all input is unlocked?.
-    pub fn unlock_by_index(&self, idx: usize, backend: B) -> Result<i32> {
+    pub fn unlock_by_index(&self, idx: usize, backend: impl Backend) -> Result<i32> {
         if let Some(input) = self.transaction.inputs.get(idx) {
             // try to get input's output.
             if !matches!(input.operation, InputOperation::Input(_)) {
@@ -69,7 +64,7 @@ where
         }
     }
 
-    fn unlock(&self, code: &[u8], data: &[u8], backend: B) -> Result<i32> {
+    fn unlock<B: Backend>(&self, code: &[u8], data: &[u8], backend: B) -> Result<i32> {
         // build env and tx backend.
         let module = B::Module::load_bytes(code)?;
 
@@ -82,7 +77,11 @@ where
 
         let len: i32 = data.len().try_into()?;
 
-        if let Some(Val::I32(ptr)) = instance.call_func("_gca_env_alloc", &[Val::I32(len)])? {
+        let ptr = instance.call_func("_gca_env_alloc", &[Val::I32(len)])?;
+
+        log::info!("alloced ptr: {:?}", ptr);
+
+        if let Some(Val::I32(ptr)) = ptr {
             let offset: usize = ptr.try_into()?;
 
             memory.write(offset, data)?;
@@ -101,7 +100,11 @@ where
         }
     }
 
-    pub fn verify_operation(&self, operation: OutputOperation, backend: B) -> Result<i32> {
+    pub fn verify_operation(
+        &self,
+        operation: OutputOperation,
+        backend: impl Backend,
+    ) -> Result<i32> {
         // get output.
         let output_id = self
             .operations
@@ -118,7 +121,7 @@ where
         }
     }
 
-    fn verify_operation_script(&self, code: &[u8], backend: B) -> Result<i32> {
+    fn verify_operation_script<B: Backend>(&self, code: &[u8], backend: B) -> Result<i32> {
         let module = B::Module::load_bytes(code)?;
 
         let mut instance = backend.instance(&module, &[])?;
@@ -130,7 +133,7 @@ where
         }
     }
 
-    pub fn verify_output(&self, index: usize, backend: B) -> Result<i32> {
+    pub fn verify_output(&self, index: usize, backend: impl Backend) -> Result<i32> {
         let output = self
             .transaction
             .outputs
@@ -151,7 +154,12 @@ where
         }
     }
 
-    fn verify_output_script(&self, index: usize, code: &[u8], backend: B) -> Result<i32> {
+    fn verify_output_script<B: Backend>(
+        &self,
+        index: usize,
+        code: &[u8],
+        backend: B,
+    ) -> Result<i32> {
         let mut deps = Vec::new();
 
         // Load dep module.
@@ -184,5 +192,125 @@ where
         } else {
             Err(Error::ErrReturnCode)
         }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use std::{env, fs, path::Path};
+
+    use gca_core::{
+        Amount, Input, InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction,
+    };
+
+    use crate::{Backend, Executor};
+
+    pub fn test_empty<B: Backend>() {
+        // Read wasm
+        let env = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let wasm_path =
+            Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/empty.wasm");
+        let bin = fs::read(wasm_path).unwrap();
+
+        let wasm_output_id = OutputId::from_hex(
+            "0x0000000000000000000000000000000000000000000000000000000000000001:0",
+        )
+        .unwrap();
+
+        let unspend_output_id = OutputId::from_hex(
+            "0x0000000000000000000000000000000000000000000000000000000000000002:0",
+        )
+        .unwrap();
+
+        // Build tx.
+        //
+        // Inputs:
+        // 1. Spent output
+        //     - output_id: 0x00:100,
+        //     - unlock: 0x,
+        //     - operation: Input(0),
+        //
+        // Outputs:
+        // 1. Transfer result
+        //     - locker: 0x00:200,
+        //     - data: Amount:99,
+        //     - verifier: 0x00:200,
+        let txhash = Default::default();
+
+        let mut inputs = Vec::new();
+
+        // Try to cost this output.
+        let input1 = Input {
+            output_id: unspend_output_id.clone(),
+            unlock: Vec::new(),
+            operation: InputOperation::Input(0),
+        };
+
+        inputs.push(input1);
+
+        let mut outputs = Vec::new();
+
+        let output = Output {
+            data: OutputData::NativeToken(Amount(99)),
+            locker: wasm_output_id.clone(),
+            verifier: Some(wasm_output_id.clone()),
+            operation: OutputOperation(2),
+        };
+        outputs.push(output);
+
+        let output = Output {
+            data: OutputData::NativeToken(Amount(1)),
+            locker: wasm_output_id.clone(),
+            verifier: Some(wasm_output_id.clone()),
+            operation: OutputOperation(0),
+        };
+        outputs.push(output);
+
+        let memos = Default::default();
+
+        let tx = Transaction {
+            txhash,
+            inputs,
+            outputs,
+            memos,
+        };
+
+        let mut executor = Executor::new(tx);
+
+        // Insert backend output.
+        let unspend_output = Output {
+            data: OutputData::NativeToken(Amount(100)),
+            locker: wasm_output_id.clone(),
+            verifier: Some(wasm_output_id.clone()),
+            operation: OutputOperation(2),
+        };
+        executor.outputs.insert(unspend_output_id, unspend_output);
+
+        let wasm_output = Output {
+            data: OutputData::Data(bin),
+            locker: wasm_output_id.clone(),
+            verifier: Some(wasm_output_id.clone()),
+            operation: OutputOperation(1),
+        };
+        executor.outputs.insert(wasm_output_id.clone(), wasm_output);
+
+        let unlock_backend = B::new();
+        let code = executor.unlock_by_index(0, unlock_backend).unwrap();
+        assert_eq!(code, 0);
+
+        let operation_backend = B::new();
+
+        let operation = OutputOperation(0);
+        executor.operations.insert(operation.clone(), wasm_output_id.clone());
+
+        let code = executor.verify_operation(operation, operation_backend).unwrap();
+        assert_eq!(code, 0);
+
+        let verifier_backend = B::new();
+        let code = executor.verify_output(0, verifier_backend).unwrap();
+        assert_eq!(code, 0);
+        let verifier_backend = B::new();
+        let code = executor.verify_output(1, verifier_backend).unwrap();
+        assert_eq!(code, 0);
     }
 }

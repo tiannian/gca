@@ -1,10 +1,10 @@
 use alloc::string::String;
-use cstr_core::CStr;
+use cstr_core::{c_char, CStr};
 
 use crate::Result;
 
 extern "C" {
-    fn _env_get_chain_id() -> *const i8;
+    fn _env_get_chain_id() -> *const c_char;
 }
 
 pub fn get_chain_id() -> Result<String> {

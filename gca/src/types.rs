@@ -16,7 +16,7 @@ pub struct Memo {
     pub data: Vec<u8>,
 }
 
-#[derive(Debug, Default, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct OutputOperation(pub u32);
 
 #[derive(Debug, Default)]

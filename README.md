@@ -21,7 +21,7 @@
     - [X] event: emmit event on 
 - [ ] Host support for RT library.
 - [ ] Testing and Examples.
-    - [ ] Empty entry function.
+    - [X] Empty entry function.
     - [ ] Log.
     - [ ] Got chainid.
 

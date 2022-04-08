@@ -18,10 +18,10 @@ impl Instance for WasmiInstance {
             .map(|e| wasmi::RuntimeValue::from(e.clone()))
             .collect();
 
-        self.instance
-            .invoke_export(name, &args, &mut self.external)?;
+        let ret = self.instance
+            .invoke_export(name, &args, &mut self.external)?.map(|v| Val::from(v));
 
-        Ok(None)
+        Ok(ret)
     }
 
     fn get_memory(&self, name: &str) -> Option<Self::Memory> {

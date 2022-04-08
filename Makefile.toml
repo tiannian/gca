@@ -1,15 +1,23 @@
+# Test
+
 [tasks.build-example]
 command = "cargo"
 args = ["build", "--manifest-path", "examples/Cargo.toml", "--target", "wasm32-unknown-unknown", "--release"]
 
-[tasks.test-empty]
-dependencies = ["build-example"]
-
 [tasks.test]
 workspace = false
-dependencies = ["test-empty"]
+dependencies = ["build-example"]
 command = "cargo"
 args = ["test"]
+
+## Test nocapture
+
+[tasks.test-nocapture]
+workspace = false
+dependencies = ["build-example"]
+command = "cargo"
+env = { "RUST_LOG" = "debug" }
+args = ["test", "--", "--nocapture"]
 
 ## Define clean command
 

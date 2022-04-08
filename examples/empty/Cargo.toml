@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 gca-rt-panic-log = { path = "../../gca-rt/panic-log" }
+gca-rt-env = { path = "../../gca-rt/env" }
