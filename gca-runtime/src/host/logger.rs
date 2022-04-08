@@ -101,14 +101,14 @@ impl<M: Memory + 'static> Host<M> for Logger<M> {
 fn val_to_u32(v: &Val) -> Result<u32, LoggerError> {
     match v {
         Val::I32(i) => Ok(*i as u32),
-        _ => Err(LoggerError::ErrWasmType)
+        _ => Err(LoggerError::ErrWasmType),
     }
 }
 
 fn val_to_i32(v: &Val) -> Result<i32, LoggerError> {
     match v {
         Val::I32(i) => Ok(*i),
-        _ => Err(LoggerError::ErrWasmType)
+        _ => Err(LoggerError::ErrWasmType),
     }
 }
 
@@ -120,7 +120,9 @@ fn get_string(ptr: &Val, len: &Val, memory: &impl Memory) -> Result<String, Logg
 
     buf.resize(len as usize, 0);
 
-    memory.read(ptr as usize, &mut buf).map_err(|_| LoggerError::MemoryReadError)?;
+    memory
+        .read(ptr as usize, &mut buf)
+        .map_err(|_| LoggerError::MemoryReadError)?;
 
     Ok(String::from_utf8(buf)?)
 }
@@ -141,4 +143,3 @@ fn val_to_level(level: &Val) -> Result<log::Level, LoggerError> {
 
     Ok(level)
 }
-

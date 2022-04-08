@@ -203,7 +203,7 @@ pub mod tests {
         Amount, Input, InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction,
     };
 
-    use crate::{Backend, Executor, host};
+    use crate::{host, Backend, Executor};
 
     pub fn build_tx(wasm_output_id: &OutputId, unspend_output_id: &OutputId) -> Transaction {
         // Build tx.

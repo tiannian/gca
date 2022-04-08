@@ -13,6 +13,21 @@ pub enum Error {
     ErrWasmAllocError,
     ErrReturnCode,
     ErrNoOperation,
+
+    ParityWasmError(parity_wasm::elements::Error),
+    InjectError,
+}
+
+impl From<parity_wasm::elements::Module> for Error {
+    fn from(_: parity_wasm::elements::Module) -> Self {
+        Error::InjectError
+    }
+}
+
+impl From<parity_wasm::elements::Error> for Error {
+    fn from(e: parity_wasm::elements::Error) -> Error {
+        Error::ParityWasmError(e)
+    }
 }
 
 impl From<std::num::TryFromIntError> for Error {

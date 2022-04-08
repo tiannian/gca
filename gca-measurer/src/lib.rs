@@ -116,8 +116,14 @@ impl<M: Memory + 'static> gca_runtime::Host<M> for GcaMeasurerHost<M> {
 
 #[cfg(test)]
 mod tests {
+    use std::{env, path::Path, fs};
+
     #[test]
     fn test_gas() {
-
+        let env = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let wasm_path =
+            Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/empty.wasm");
+        let bin = fs::read(wasm_path).unwrap();
+        let executor = gca_runtime::tests::build_exeutor(bin);
     }
 }

@@ -19,3 +19,6 @@ pub mod helper;
 pub mod wasmi;
 
 pub mod host;
+
+mod measurer;
+pub use measurer::*;

@@ -29,8 +29,12 @@ mod test {
 
     #[test]
     fn test_log() {
-        // env_logger::init();
-
         crate::executor::tests::test_log::<WasmiBackend>();
+    }
+
+    #[test]
+    fn test_gas() {
+        // env_logger::init();
+        crate::measurer::tests::test_gas::<WasmiBackend>();
     }
 }

@@ -9,7 +9,6 @@ members = [
     "gca-rt/block",
 
     "gca-runtime",
-    "gca-measurer",
 ]
 exclude = [
     "examples/*"
