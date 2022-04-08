@@ -1,5 +1,6 @@
 use crate::{Memory, Result};
 
+#[derive(Clone)]
 pub struct WasmiMemory {
     pub m: wasmi::MemoryRef,
 }

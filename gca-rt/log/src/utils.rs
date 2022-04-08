@@ -1,4 +1,3 @@
-use cstr_core::{c_char, CString};
 use log::Level;
 
 use core::ptr;
@@ -13,19 +12,14 @@ pub fn level_to_u8(level: &Level) -> u8 {
     }
 }
 
-pub fn str_to_ptr(s: &str) -> *const c_char {
-    if let Ok(cstring) = CString::new(s) {
-        cstring.as_ptr()
-    } else {
-        ptr::null()
-    }
+pub fn str_to_ptr(s: &str) -> (*const u8, usize) {
+    (s.as_ptr(), s.len())
 }
 
-pub fn opt_str_to_ptr(s: Option<&str>) -> *const c_char {
-    if let Some(st) = s {
-        if let Ok(cstring) = CString::new(st) {
-            return cstring.as_ptr();
-        }
+pub fn opt_str_to_ptr(s: Option<&str>) -> (*const u8, usize) {
+    if let Some(s) = s {
+        (s.as_ptr(), s.len())
+    } else {
+        (ptr::null(), 0)
     }
-    ptr::null()
 }

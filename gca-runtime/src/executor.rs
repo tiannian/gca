@@ -203,25 +203,9 @@ pub mod tests {
         Amount, Input, InputOperation, Output, OutputData, OutputId, OutputOperation, Transaction,
     };
 
-    use crate::{Backend, Executor};
+    use crate::{Backend, Executor, host};
 
-    pub fn test_empty<B: Backend>() {
-        // Read wasm
-        let env = env::var("CARGO_MANIFEST_DIR").unwrap();
-        let wasm_path =
-            Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/empty.wasm");
-        let bin = fs::read(wasm_path).unwrap();
-
-        let wasm_output_id = OutputId::from_hex(
-            "0x0000000000000000000000000000000000000000000000000000000000000001:0",
-        )
-        .unwrap();
-
-        let unspend_output_id = OutputId::from_hex(
-            "0x0000000000000000000000000000000000000000000000000000000000000002:0",
-        )
-        .unwrap();
-
+    fn build_tx(wasm_output_id: &OutputId, unspend_output_id: &OutputId) -> Transaction {
         // Build tx.
         //
         // Inputs:
@@ -268,12 +252,32 @@ pub mod tests {
 
         let memos = Default::default();
 
-        let tx = Transaction {
+        Transaction {
             txhash,
             inputs,
             outputs,
             memos,
-        };
+        }
+    }
+
+    pub fn test_empty<B: Backend>() {
+        // Read wasm
+        let env = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let wasm_path =
+            Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/empty.wasm");
+        let bin = fs::read(wasm_path).unwrap();
+
+        let wasm_output_id = OutputId::from_hex(
+            "0x0000000000000000000000000000000000000000000000000000000000000001:0",
+        )
+        .unwrap();
+
+        let unspend_output_id = OutputId::from_hex(
+            "0x0000000000000000000000000000000000000000000000000000000000000002:0",
+        )
+        .unwrap();
+
+        let tx = build_tx(&wasm_output_id, &unspend_output_id);
 
         let mut executor = Executor::new(tx);
 
@@ -317,4 +321,73 @@ pub mod tests {
         let code = executor.verify_output(1, verifier_backend).unwrap();
         assert_eq!(code, 0);
     }
+
+    pub fn test_log<B: Backend>() {
+        // Read wasm
+        let env = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let wasm_path =
+            Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/log.wasm");
+        let bin = fs::read(wasm_path).unwrap();
+
+        let wasm_output_id = OutputId::from_hex(
+            "0x0000000000000000000000000000000000000000000000000000000000000001:0",
+        )
+        .unwrap();
+
+        let unspend_output_id = OutputId::from_hex(
+            "0x0000000000000000000000000000000000000000000000000000000000000002:0",
+        )
+        .unwrap();
+
+        let tx = build_tx(&wasm_output_id, &unspend_output_id);
+
+        let mut executor = Executor::new(tx);
+
+        // Insert backend output.
+        let unspend_output = Output {
+            data: OutputData::NativeToken(Amount(100)),
+            locker: wasm_output_id.clone(),
+            verifier: Some(wasm_output_id.clone()),
+            operation: OutputOperation(2),
+        };
+        executor.outputs.insert(unspend_output_id, unspend_output);
+
+        let wasm_output = Output {
+            data: OutputData::Data(bin),
+            locker: wasm_output_id.clone(),
+            verifier: Some(wasm_output_id.clone()),
+            operation: OutputOperation(1),
+        };
+        executor.outputs.insert(wasm_output_id.clone(), wasm_output);
+
+        // instant host
+        let log = host::Logger::<B::Memory>::new();
+
+        let mut unlock_backend = B::new();
+        unlock_backend.add_host("_gca_log", log.clone());
+        let code = executor.unlock_by_index(0, unlock_backend).unwrap();
+        assert_eq!(code, 0);
+
+        let mut operation_backend = B::new();
+        operation_backend.add_host("_gca_log", log.clone());
+        let operation = OutputOperation(0);
+        executor
+            .operations
+            .insert(operation.clone(), wasm_output_id.clone());
+
+        let code = executor
+            .verify_operation(operation, operation_backend)
+            .unwrap();
+        assert_eq!(code, 0);
+
+        let mut verifier_backend = B::new();
+        verifier_backend.add_host("_gca_log", log.clone());
+        let code = executor.verify_output(0, verifier_backend).unwrap();
+        assert_eq!(code, 0);
+        let mut verifier_backend = B::new();
+        verifier_backend.add_host("_gca_log", log.clone());
+        let code = executor.verify_output(1, verifier_backend).unwrap();
+        assert_eq!(code, 0);
+    }
+
 }

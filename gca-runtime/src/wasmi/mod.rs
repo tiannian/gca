@@ -21,9 +21,16 @@ mod test {
     use super::WasmiBackend;
 
     #[test]
-    fn test_unlock() {
+    fn test_empty() {
         env_logger::init();
 
         crate::executor::tests::test_empty::<WasmiBackend>();
+    }
+
+    #[test]
+    fn test_log() {
+        // env_logger::init();
+
+        crate::executor::tests::test_log::<WasmiBackend>();
     }
 }

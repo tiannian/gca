@@ -21,5 +21,6 @@ extern "C" fn _gca_verifier_entry() -> i32 {
 
 pub fn main() -> i32 {
     gca_rt_log::init().unwrap();
+    log::info!("asdasdsdad");
     0
 }

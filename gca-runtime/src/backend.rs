@@ -28,7 +28,7 @@ pub trait Host<M: Memory>: 'static {
     ) -> std::result::Result<Option<Val>, Box<dyn Debug + Sync + Send>>;
 }
 
-pub trait Memory {
+pub trait Memory: Clone {
     fn read(&self, offset: usize, buffer: &mut [u8]) -> Result<()>;
 
     fn write(&self, offset: usize, buffer: &[u8]) -> Result<()>;
@@ -39,7 +39,7 @@ pub trait Backend {
 
     type Instance: Instance<Module = Self::Module, Memory = Self::Memory>;
 
-    type Memory: Memory;
+    type Memory: Memory + 'static;
 
     // Create new wasm backend from host functions
     fn new() -> Self;
