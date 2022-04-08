@@ -11,4 +11,7 @@ members = [
     "gca-runtime",
     "gca-measurer",
 ]
+exclude = [
+    "examples/*"
+]
 

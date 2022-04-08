@@ -1,6 +1,4 @@
 [workspace]
 members = [
-    "unlock-entry",
-    "operation-entry",
-    "verifier-entry",
+    "empty",
 ]
