@@ -22,9 +22,9 @@
 - [ ] Host support for RT library.
 - [ ] Testing and Examples.
     - [X] Empty entry function.
-    - [ ] Log.
+    - [X] Log.
     - [ ] Gas measure.
-    - [ ] Got chainid.
+    - [ ] Get chainid.
 
 ## Testing
 

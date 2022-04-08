@@ -36,16 +36,18 @@ pub fn inject_gas(code: &[u8], rules: impl Rules) -> Result<Vec<u8>> {
 
 pub struct GcaMeasurerHost<M> {
     gas: u64,
+    gas_limit: u64,
     func_def: Vec<gca_runtime::FuncDefine>,
     marker_b: PhantomData<M>,
 }
 
 impl<M> GcaMeasurerHost<M> {
-    pub fn new() -> Self {
+    pub fn new(gas_limit: u64) -> Self {
         let func_def = vec![];
 
         Self {
             gas: 0,
+            gas_limit,
             func_def,
             marker_b: PhantomData,
         }
@@ -60,6 +62,7 @@ impl<M> GcaMeasurerHost<M> {
 pub enum GcaMeasurerHostError {
     ErrArgumentsFormat,
     ErrCalledName,
+    ExccedGasLimit,
 }
 
 impl From<GcaMeasurerHostError> for Box<dyn Debug + Send + Sync> {
@@ -97,11 +100,24 @@ impl<M: Memory + 'static> gca_runtime::Host<M> for GcaMeasurerHost<M> {
         if let Some(gca_runtime::Val::I32(i)) = args.get(0) {
             // TODO: Add exccess to exit Execute.
             let step_gas = *i as u64;
+
             self.gas += step_gas;
+
+            if self.gas > self.gas_limit {
+                return Err(GcaMeasurerHostError::ExccedGasLimit.into());
+            }
         } else {
             return Err(GcaMeasurerHostError::ErrArgumentsFormat.into());
         }
 
         Ok(None)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_gas() {
+
     }
 }
