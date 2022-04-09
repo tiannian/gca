@@ -1,4 +1,4 @@
-use crate::{Error, Instance, Result, Val, Host};
+use crate::{Error, Host, Instance, Result, Val};
 
 use super::{WasmiExternal, WasmiMemory, WasmiModule};
 
