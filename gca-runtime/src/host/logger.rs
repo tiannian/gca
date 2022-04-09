@@ -1,4 +1,4 @@
-use std::{fmt::Debug, string::FromUtf8Error, sync::Arc};
+use std::{any::Any, fmt::Debug, string::FromUtf8Error, sync::Arc};
 
 use crate::{FuncDefine, Host, Instance, Memory, Val, ValTy};
 
@@ -72,6 +72,10 @@ impl<M: Instance + 'static> Host<M> for Logger<M> {
 
     fn set_instance(&mut self, instance: M) {
         self.instance = Some(instance);
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 
     fn call_func(

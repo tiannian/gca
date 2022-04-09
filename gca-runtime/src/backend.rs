@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{any::Any, fmt::Debug};
 
 use crate::{FuncDefine, ModuleInfo, Result, Val};
 
@@ -16,6 +16,8 @@ pub trait Instance: Sized + 'static {
     fn call_func_for_host(&mut self, name: &str, parmas: &[Val]) -> Result<Option<Val>>;
 
     fn get_memory(&self, name: &str) -> Option<Self::Memory>;
+
+    fn get_host(&self, name: &str) -> Option<&dyn Any>;
 }
 
 pub trait Host<I: Instance>: 'static {
@@ -28,6 +30,8 @@ pub trait Host<I: Instance>: 'static {
         name: &str,
         args: &[Val],
     ) -> std::result::Result<Option<Val>, Box<dyn Debug + Sync + Send>>;
+
+    fn as_any(&self) -> &dyn Any;
 }
 
 pub trait Memory: Clone {

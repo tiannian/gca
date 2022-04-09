@@ -1,4 +1,4 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::{any::Any, fmt::Debug, marker::PhantomData};
 
 use crate::{FuncDefine, Host, Instance, Val, ValTy};
 
@@ -23,7 +23,7 @@ impl<M> Clone for GcaMeasurer<M> {
 impl<M> GcaMeasurer<M> {
     pub fn new(gas_limit: u64) -> Self {
         let f = FuncDefine {
-            name: "_gca_gas",
+            name: "gas",
             parmas: vec![ValTy::I32],
             ret: None,
         };
@@ -37,6 +37,10 @@ impl<M> GcaMeasurer<M> {
             marker_b: PhantomData,
         }
     }
+
+    //     pub fn from_host(host: Box<dyn Host<M>>) -> Self {
+    // host as Self
+    //     }
 
     pub fn gas(&self) -> u64 {
         self.gas
@@ -62,6 +66,10 @@ impl<M: Instance + 'static> Host<M> for GcaMeasurer<M> {
     }
 
     fn set_instance(&mut self, _instance: M) {}
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 
     fn call_func(
         &mut self,

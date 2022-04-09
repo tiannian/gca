@@ -1,4 +1,4 @@
-pub use pwasm_utils::rules::Rules;
+use pwasm_utils::rules::Rules;
 
 use crate::Result;
 
@@ -12,18 +12,23 @@ pub fn inject_gas(code: &[u8], rules: impl Rules) -> Result<Vec<u8>> {
 
 #[cfg(test)]
 pub mod tests {
-    use std::{env, fs, path::Path};
+    use std::{collections::BTreeMap, env, fs, path::Path};
 
     use gca_core::OutputOperation;
 
-    use crate::{host, Backend};
+    use crate::{host, inject_gas, Backend};
 
     pub fn test_gas<B: Backend>() {
         let env = env::var("CARGO_MANIFEST_DIR").unwrap();
         let wasm_path =
             Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/log.wasm");
         let bin = fs::read(wasm_path).unwrap();
-        let executor = crate::executor::tests::build_exeutor(bin);
+
+        let set = pwasm_utils::rules::Set::new(1, BTreeMap::new());
+
+        let gased_module = inject_gas(&bin, set).unwrap();
+
+        let executor = crate::executor::tests::build_exeutor(gased_module);
 
         // instant host
         let log = host::Logger::<B::Instance>::new();

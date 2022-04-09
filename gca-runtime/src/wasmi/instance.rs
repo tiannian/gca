@@ -54,6 +54,15 @@ impl Instance for WasmiInstance {
             None
         }
     }
+
+    fn get_host(&self, name: &str) -> Option<&dyn std::any::Any> {
+        for (n, host) in &self.external.as_ref()?.hosts {
+            if n == name {
+                return Some(host);
+            }
+        }
+        None
+    }
 }
 
 impl From<Val> for wasmi::RuntimeValue {
