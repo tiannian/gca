@@ -37,7 +37,11 @@ impl Executor {
     }
 
     /// Validate this transaction's all input is unlocked?.
-    pub fn unlock_by_index(&self, idx: usize, backend: impl Backend) -> Result<i32> {
+    pub fn unlock_by_index<B: Backend>(
+        &self,
+        idx: usize,
+        backend: B,
+    ) -> Result<(i32, B::Instance)> {
         if let Some(input) = self.transaction.inputs.get(idx) {
             // try to get input's output.
             if !matches!(input.operation, InputOperation::Input(_)) {
@@ -64,7 +68,12 @@ impl Executor {
         }
     }
 
-    fn unlock<B: Backend>(&self, code: &[u8], data: &[u8], backend: B) -> Result<i32> {
+    fn unlock<B: Backend>(
+        &self,
+        code: &[u8],
+        data: &[u8],
+        backend: B,
+    ) -> Result<(i32, B::Instance)> {
         // build env and tx backend.
         let module = B::Module::load_bytes(code)?;
 
@@ -91,7 +100,7 @@ impl Executor {
             if let Some(Val::I32(ret_code)) =
                 instance.call_func("_gca_unlock_entry", &[Val::I32(ptr)])?
             {
-                Ok(ret_code)
+                Ok((ret_code, instance))
             } else {
                 Err(Error::ErrReturnCode)
             }
@@ -271,7 +280,7 @@ pub mod tests {
 
         let unlock_backend = B::new();
         let code = executor.unlock_by_index(0, unlock_backend).unwrap();
-        assert_eq!(code, 0);
+        assert_eq!(code.0, 0);
 
         let operation_backend = B::new();
 
@@ -304,7 +313,8 @@ pub mod tests {
         let mut unlock_backend = B::new();
         unlock_backend.add_host("_gca_log", log.clone());
         let code = executor.unlock_by_index(0, unlock_backend).unwrap();
-        assert_eq!(code, 0);
+
+        assert_eq!(code.0, 0);
 
         let mut operation_backend = B::new();
         operation_backend.add_host("_gca_log", log.clone());
@@ -342,7 +352,7 @@ pub mod tests {
         unlock_backend.add_host("_gca_log", log.clone());
         unlock_backend.add_host("_gca_env", env.clone());
         let code = executor.unlock_by_index(0, unlock_backend).unwrap();
-        assert_eq!(code, 0);
+        assert_eq!(code.0, 0);
 
         let mut operation_backend = B::new();
         operation_backend.add_host("_gca_log", log.clone());

@@ -1,4 +1,4 @@
-use crate::{Error, Instance, Result, Val};
+use crate::{Error, Instance, Result, Val, Host};
 
 use super::{WasmiExternal, WasmiMemory, WasmiModule};
 
@@ -55,10 +55,10 @@ impl Instance for WasmiInstance {
         }
     }
 
-    fn get_host(&self, name: &str) -> Option<&dyn std::any::Any> {
+    fn get_host(&self, name: &str) -> Option<&dyn Host<Self>> {
         for (n, host) in &self.external.as_ref()?.hosts {
             if n == name {
-                return Some(host);
+                return Some(host.as_ref());
             }
         }
         None

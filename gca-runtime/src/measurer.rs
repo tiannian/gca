@@ -16,7 +16,7 @@ pub mod tests {
 
     use gca_core::OutputOperation;
 
-    use crate::{host, inject_gas, Backend};
+    use crate::{host, inject_gas, Backend, Instance};
 
     pub fn test_gas<B: Backend>() {
         let env = env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -38,7 +38,18 @@ pub mod tests {
         unlock_backend.add_host("_gca_log", log.clone());
         unlock_backend.add_host("_gca_gas", measurer.clone());
         let code = executor.unlock_by_index(0, unlock_backend).unwrap();
-        assert_eq!(code, 0);
+
+        let any_host = code.1.get_host("_gca_gas").unwrap();
+
+        println!("{:?}", any_host.type_id());
+
+        let measurer = any_host
+            .downcast_ref::<host::GcaMeasurer<B::Instance>>()
+            .unwrap();
+
+        println!("gas is: {}", measurer.gas());
+
+        assert_eq!(code.0, 0);
 
         let mut operation_backend = B::new();
         operation_backend.add_host("_gca_log", log.clone());
@@ -49,6 +60,8 @@ pub mod tests {
             .verify_operation(operation, operation_backend)
             .unwrap();
         assert_eq!(code, 0);
+
+        // let gas operation_backend.
 
         let mut verifier_backend = B::new();
         verifier_backend.add_host("_gca_log", log.clone());

@@ -20,10 +20,15 @@
     - [X] panic-log: panic info to log.
     - [X] event: emmit event on 
 - [ ] Host support for RT library.
-- [ ] Testing and Examples.
+    - [X] env: expose malloc/free, `chain_id` or other function
+    - [ ] block: access block.
+    - [ ] tx: access current execute transaction.
+    - [X] log: support `log` crate.
+    - [ ] event: emmit event on 
+- [X] Testing and Examples.
     - [X] Empty entry function.
     - [X] Log.
-    - [ ] Gas measure.
+    - [X] Gas measure.
     - [X] Get chainid.
 
 ## Testing

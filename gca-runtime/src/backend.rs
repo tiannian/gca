@@ -1,4 +1,6 @@
-use std::{any::Any, fmt::Debug};
+use std::{fmt::Debug};
+
+use downcast_rs::Downcast;
 
 use crate::{FuncDefine, ModuleInfo, Result, Val};
 
@@ -17,10 +19,10 @@ pub trait Instance: Sized + 'static {
 
     fn get_memory(&self, name: &str) -> Option<Self::Memory>;
 
-    fn get_host(&self, name: &str) -> Option<&dyn Any>;
+    fn get_host(&self, name: &str) -> Option<&dyn Host<Self>>;
 }
 
-pub trait Host<I: Instance>: 'static {
+pub trait Host<I: Instance>: Downcast + 'static {
     fn resolve_functions(&self) -> &[FuncDefine];
 
     fn set_instance(&mut self, instance: I);
@@ -31,8 +33,10 @@ pub trait Host<I: Instance>: 'static {
         args: &[Val],
     ) -> std::result::Result<Option<Val>, Box<dyn Debug + Sync + Send>>;
 
-    fn as_any(&self) -> &dyn Any;
+    // fn as_any(&self) -> &dyn Downcast;
 }
+
+downcast_rs::impl_downcast!(Host<I> where I: Instance);
 
 pub trait Memory: Clone {
     fn read(&self, offset: usize, buffer: &mut [u8]) -> Result<()>;

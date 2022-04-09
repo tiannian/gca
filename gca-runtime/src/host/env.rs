@@ -1,4 +1,4 @@
-use std::{any::Any, fmt::Debug, sync::Arc};
+use std::{fmt::Debug, sync::Arc};
 
 use crate::{FuncDefine, Host, Instance, Memory, Val, ValTy};
 
@@ -61,9 +61,9 @@ impl<M: Instance + 'static> Host<M> for Env<M> {
         self.instance = Some(instance);
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
+//     fn as_any(&self) -> &dyn Any {
+        // self
+//     }
 
     fn call_func(
         &mut self,

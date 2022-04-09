@@ -1,4 +1,4 @@
-use std::{any::Any, fmt::Debug, marker::PhantomData};
+use std::{fmt::Debug, marker::PhantomData};
 
 use crate::{FuncDefine, Host, Instance, Val, ValTy};
 
@@ -67,9 +67,9 @@ impl<M: Instance + 'static> Host<M> for GcaMeasurer<M> {
 
     fn set_instance(&mut self, _instance: M) {}
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
+//     fn as_any(&self) -> &dyn Any {
+        // self
+//     }
 
     fn call_func(
         &mut self,
