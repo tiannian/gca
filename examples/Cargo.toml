@@ -2,4 +2,5 @@
 members = [
     "empty",
     "log",
+    "chain_id",
 ]

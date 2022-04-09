@@ -1,0 +1,13 @@
+[package]
+name = "chain_id"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gca-rt-log = { path = "../../gca-rt/log" }
+gca-rt-panic-log = { path = "../../gca-rt/panic-log" }
+gca-rt-env = { path = "../../gca-rt/env" }
+
+log = "0.4.16"

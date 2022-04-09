@@ -24,7 +24,7 @@
     - [X] Empty entry function.
     - [X] Log.
     - [ ] Gas measure.
-    - [ ] Get chainid.
+    - [X] Get chainid.
 
 ## Testing
 

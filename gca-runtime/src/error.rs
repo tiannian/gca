@@ -16,6 +16,8 @@ pub enum Error {
 
     ParityWasmError(parity_wasm::elements::Error),
     InjectError,
+
+    BackendError(String),
 }
 
 impl From<parity_wasm::elements::Module> for Error {

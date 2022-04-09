@@ -20,21 +20,35 @@ pub use imports::*;
 mod test {
     use super::WasmiBackend;
 
+    fn init() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
+
     #[test]
     fn test_empty() {
-        env_logger::init();
+        init();
 
         crate::executor::tests::test_empty::<WasmiBackend>();
     }
 
     #[test]
     fn test_log() {
+        init();
+
         crate::executor::tests::test_log::<WasmiBackend>();
     }
 
     #[test]
     fn test_gas() {
-        // env_logger::init();
+        init();
+
         crate::measurer::tests::test_gas::<WasmiBackend>();
+    }
+
+    #[test]
+    fn test_chain_id() {
+        init();
+
+        crate::executor::tests::test_chain_id::<WasmiBackend>();
     }
 }

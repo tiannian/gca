@@ -1,10 +1,11 @@
+#[derive(Debug)]
 pub enum Error {
-    ErrUtf8(core::str::Utf8Error),
+    ErrUtf8,
 }
 
 impl From<core::str::Utf8Error> for Error {
-    fn from(e: core::str::Utf8Error) -> Self {
-        Error::ErrUtf8(e)
+    fn from(_: core::str::Utf8Error) -> Self {
+        Error::ErrUtf8
     }
 }
 

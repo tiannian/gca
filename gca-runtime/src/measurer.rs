@@ -26,8 +26,8 @@ pub mod tests {
         let executor = crate::executor::tests::build_exeutor(bin);
 
         // instant host
-        let log = host::Logger::<B::Memory>::new();
-        let measurer = host::GcaMeasurer::<B::Memory>::new(10000);
+        let log = host::Logger::<B::Instance>::new();
+        let measurer = host::GcaMeasurer::<B::Instance>::new(10000);
 
         let mut unlock_backend = B::new();
         unlock_backend.add_host("_gca_log", log.clone());

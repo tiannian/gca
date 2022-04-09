@@ -6,20 +6,22 @@ pub trait Module: Sized {
     fn load_bytes(bytes: impl AsRef<[u8]>) -> Result<Self>;
 }
 
-pub trait Instance: Sized {
+pub trait Instance: Sized + 'static {
     type Module: Module;
 
     type Memory: Memory;
 
     fn call_func(&mut self, name: &str, parmas: &[Val]) -> Result<Option<Val>>;
 
+    fn call_func_for_host(&mut self, name: &str, parmas: &[Val]) -> Result<Option<Val>>;
+
     fn get_memory(&self, name: &str) -> Option<Self::Memory>;
 }
 
-pub trait Host<M: Memory>: 'static {
+pub trait Host<I: Instance>: 'static {
     fn resolve_functions(&self) -> &[FuncDefine];
 
-    fn set_memory(&mut self, memory: M);
+    fn set_instance(&mut self, instance: I);
 
     fn call_func(
         &mut self,
@@ -44,7 +46,7 @@ pub trait Backend {
     // Create new wasm backend from host functions
     fn new() -> Self;
 
-    fn add_host(&mut self, name: &str, host: impl Host<Self::Memory>);
+    fn add_host(&mut self, name: &str, host: impl Host<Self::Instance>);
 
     fn instance(
         self,

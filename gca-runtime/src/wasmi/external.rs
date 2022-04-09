@@ -7,7 +7,7 @@ use wasmi::{HostError, RuntimeArgs, RuntimeValue, Trap, TrapKind};
 
 use crate::{Host, Val};
 
-use super::WasmiMemory;
+use super::WasmiInstance;
 
 #[derive(Debug)]
 pub enum ExternalError {
@@ -25,7 +25,7 @@ impl HostError for ExternalError {}
 
 pub struct WasmiExternal {
     pub(crate) host_idxs: BTreeMap<usize, (usize, &'static str)>,
-    pub(crate) hosts: Vec<(String, Box<dyn Host<WasmiMemory>>)>,
+    pub(crate) hosts: Vec<(String, Box<dyn Host<WasmiInstance>>)>,
 }
 
 impl wasmi::Externals for WasmiExternal {

@@ -1,6 +1,6 @@
-use std::{fmt::Debug, string::FromUtf8Error};
+use std::{fmt::Debug, string::FromUtf8Error, sync::Arc};
 
-use crate::{FuncDefine, Host, Memory, Val, ValTy};
+use crate::{FuncDefine, Host, Instance, Memory, Val, ValTy};
 
 #[derive(Debug)]
 pub enum LoggerError {
@@ -25,10 +25,18 @@ impl From<LoggerError> for Box<dyn Debug + Send + Sync> {
     }
 }
 
-#[derive(Clone)]
 pub struct Logger<M> {
-    func_def: Vec<FuncDefine>,
-    memory: Option<M>,
+    func_def: Arc<Vec<FuncDefine>>,
+    instance: Option<M>,
+}
+
+impl<M> Clone for Logger<M> {
+    fn clone(&self) -> Self {
+        Self {
+            func_def: self.func_def.clone(),
+            instance: None,
+        }
+    }
 }
 
 impl<M> Logger<M> {
@@ -48,22 +56,22 @@ impl<M> Logger<M> {
             ret: Some(ValTy::I32),
         };
 
-        let func_def = vec![f];
+        let func_def = Arc::new(vec![f]);
 
         Self {
             func_def,
-            memory: None,
+            instance: None,
         }
     }
 }
 
-impl<M: Memory + 'static> Host<M> for Logger<M> {
+impl<M: Instance + 'static> Host<M> for Logger<M> {
     fn resolve_functions(&self) -> &[FuncDefine] {
         &self.func_def
     }
 
-    fn set_memory(&mut self, memory: M) {
-        self.memory = Some(memory);
+    fn set_instance(&mut self, instance: M) {
+        self.instance = Some(instance);
     }
 
     fn call_func(
@@ -81,12 +89,17 @@ impl<M: Memory + 'static> Host<M> for Logger<M> {
             let message_ptr = args.get(6).ok_or(LoggerError::NoArgument)?;
             let message_len = args.get(7).ok_or(LoggerError::NoArgument)?;
 
-            let memory = self.memory.as_ref().ok_or(LoggerError::NoMemory)?;
+            let memory = self
+                .instance
+                .as_ref()
+                .ok_or(LoggerError::NoMemory)?
+                .get_memory("memory")
+                .ok_or(LoggerError::NoMemory)?;
 
             let level = val_to_level(level)?;
-            let target = get_string(target_ptr, target_len, memory)?;
-            let file = get_string(file_ptr, file_len, memory)?;
-            let message = get_string(message_ptr, message_len, memory)?;
+            let target = get_string(target_ptr, target_len, &memory)?;
+            let file = get_string(file_ptr, file_len, &memory)?;
+            let message = get_string(message_ptr, message_len, &memory)?;
             let line = val_to_u32(line)?;
 
             log::log!(target: &target, level, "{}:{} {}", file, line, message);

@@ -10,7 +10,7 @@ use super::{
 
 pub struct WasmiBackend {
     pub(crate) host_idxs: BTreeMap<usize, (usize, &'static str)>,
-    pub(crate) hosts: Vec<(String, Box<dyn Host<WasmiMemory>>)>,
+    pub(crate) hosts: Vec<(String, Box<dyn Host<WasmiInstance>>)>,
 }
 
 impl Backend for WasmiBackend {
@@ -27,7 +27,7 @@ impl Backend for WasmiBackend {
         }
     }
 
-    fn add_host(&mut self, name: &str, host: impl Host<Self::Memory>) {
+    fn add_host(&mut self, name: &str, host: impl Host<Self::Instance>) {
         self.hosts.push((String::from(name), Box::new(host)));
     }
 
@@ -65,12 +65,11 @@ impl Backend for WasmiBackend {
 
         let instance = ModuleInstance::new(&module.m, &imports)?.assert_no_start();
 
-        let memory = instance.export_by_name("memory");
-
-        if let Some(wasmi::ExternVal::Memory(m)) = memory {
-            for host in &mut this.hosts {
-                host.1.set_memory(WasmiMemory { m: m.clone() })
-            }
+        for host in &mut this.hosts {
+            host.1.set_instance(WasmiInstance {
+                instance: instance.clone(),
+                external: None,
+            });
         }
 
         let external = WasmiExternal {
@@ -78,6 +77,9 @@ impl Backend for WasmiBackend {
             hosts: this.hosts,
         };
 
-        Ok(WasmiInstance { external, instance })
+        Ok(WasmiInstance {
+            external: Some(external),
+            instance,
+        })
     }
 }

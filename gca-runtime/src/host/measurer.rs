@@ -1,13 +1,23 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use crate::{FuncDefine, Host, Memory, Val, ValTy};
+use crate::{FuncDefine, Host, Instance, Val, ValTy};
 
-#[derive(Clone)]
 pub struct GcaMeasurer<M> {
     gas: u64,
     gas_limit: u64,
     func_def: Vec<FuncDefine>,
     marker_b: PhantomData<M>,
+}
+
+impl<M> Clone for GcaMeasurer<M> {
+    fn clone(&self) -> Self {
+        Self {
+            gas: self.gas,
+            gas_limit: self.gas_limit,
+            func_def: self.func_def.clone(),
+            marker_b: PhantomData,
+        }
+    }
 }
 
 impl<M> GcaMeasurer<M> {
@@ -46,12 +56,12 @@ impl From<GcaMeasurerHostError> for Box<dyn Debug + Send + Sync> {
     }
 }
 
-impl<M: Memory + 'static> Host<M> for GcaMeasurer<M> {
+impl<M: Instance + 'static> Host<M> for GcaMeasurer<M> {
     fn resolve_functions(&self) -> &[FuncDefine] {
         &self.func_def
     }
 
-    fn set_memory(&mut self, _memory: M) {}
+    fn set_instance(&mut self, _instance: M) {}
 
     fn call_func(
         &mut self,

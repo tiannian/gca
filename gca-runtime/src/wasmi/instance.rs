@@ -1,10 +1,37 @@
-use crate::{Instance, Result, Val};
+use crate::{Error, Instance, Result, Val};
 
 use super::{WasmiExternal, WasmiMemory, WasmiModule};
 
 pub struct WasmiInstance {
     pub(crate) instance: wasmi::ModuleRef,
-    pub(crate) external: WasmiExternal,
+    pub(crate) external: Option<WasmiExternal>,
+}
+
+impl WasmiInstance {
+    fn _call_func(&mut self, name: &str, parmas: &[Val], host: bool) -> Result<Option<Val>> {
+        let args: Vec<wasmi::RuntimeValue> = parmas
+            .iter()
+            .map(|e| wasmi::RuntimeValue::from(e.clone()))
+            .collect();
+
+        let ret = if host {
+            self.instance
+                .invoke_export(name, &args, &mut wasmi::NopExternals)?
+                .map(|v| Val::from(v))
+        } else {
+            self.instance
+                .invoke_export(
+                    name,
+                    &args,
+                    self.external
+                        .as_mut()
+                        .ok_or(Error::BackendError(String::from("No external")))?,
+                )?
+                .map(|v| Val::from(v))
+        };
+
+        Ok(ret)
+    }
 }
 
 impl Instance for WasmiInstance {
@@ -13,17 +40,11 @@ impl Instance for WasmiInstance {
     type Module = WasmiModule;
 
     fn call_func(&mut self, name: &str, parmas: &[Val]) -> Result<Option<Val>> {
-        let args: Vec<wasmi::RuntimeValue> = parmas
-            .iter()
-            .map(|e| wasmi::RuntimeValue::from(e.clone()))
-            .collect();
+        self._call_func(name, parmas, false)
+    }
 
-        let ret = self
-            .instance
-            .invoke_export(name, &args, &mut self.external)?
-            .map(|v| Val::from(v));
-
-        Ok(ret)
+    fn call_func_for_host(&mut self, name: &str, parmas: &[Val]) -> Result<Option<Val>> {
+        self._call_func(name, parmas, true)
     }
 
     fn get_memory(&self, name: &str) -> Option<Self::Memory> {

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use wasmi::{FuncRef, ModuleImportResolver, ModuleRef, Signature};
 
-use crate::{Host, Memory};
+use crate::{Host, Instance};
 
 pub enum ModuleHostImport {
     Host(BTreeMap<&'static str, usize>),
@@ -10,7 +10,7 @@ pub enum ModuleHostImport {
 }
 
 impl ModuleHostImport {
-    pub fn new_host<M: Memory + 'static>(host: &dyn Host<M>, offset: usize) -> Self {
+    pub fn new_host<M: Instance + 'static>(host: &dyn Host<M>, offset: usize) -> Self {
         let mut inner = BTreeMap::new();
 
         let defines = host.resolve_functions();

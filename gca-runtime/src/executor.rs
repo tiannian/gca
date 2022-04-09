@@ -299,7 +299,7 @@ pub mod tests {
         let executor = build_exeutor(bin);
 
         // instant host
-        let log = host::Logger::<B::Memory>::new();
+        let log = host::Logger::<B::Instance>::new();
 
         let mut unlock_backend = B::new();
         unlock_backend.add_host("_gca_log", log.clone());
@@ -321,6 +321,49 @@ pub mod tests {
         assert_eq!(code, 0);
         let mut verifier_backend = B::new();
         verifier_backend.add_host("_gca_log", log.clone());
+        let code = executor.verify_output(1, verifier_backend).unwrap();
+        assert_eq!(code, 0);
+    }
+
+    pub fn test_chain_id<B: Backend>() {
+        // Read wasm
+        let env = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let wasm_path =
+            Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/chain_id.wasm");
+        let bin = fs::read(wasm_path).unwrap();
+
+        let executor = build_exeutor(bin);
+
+        // instant host
+        let log = host::Logger::<B::Instance>::new();
+        let env = host::Env::<B::Instance>::new("chain id");
+
+        let mut unlock_backend = B::new();
+        unlock_backend.add_host("_gca_log", log.clone());
+        unlock_backend.add_host("_gca_env", env.clone());
+        let code = executor.unlock_by_index(0, unlock_backend).unwrap();
+        assert_eq!(code, 0);
+
+        let mut operation_backend = B::new();
+        operation_backend.add_host("_gca_log", log.clone());
+        operation_backend.add_host("_gca_env", env.clone());
+
+        let operation = OutputOperation(0);
+        let code = executor
+            .verify_operation(operation, operation_backend)
+            .unwrap();
+        assert_eq!(code, 0);
+
+        let mut verifier_backend = B::new();
+        verifier_backend.add_host("_gca_log", log.clone());
+        verifier_backend.add_host("_gca_env", env.clone());
+
+        let code = executor.verify_output(0, verifier_backend).unwrap();
+        assert_eq!(code, 0);
+        let mut verifier_backend = B::new();
+        verifier_backend.add_host("_gca_log", log.clone());
+        verifier_backend.add_host("_gca_env", env.clone());
+
         let code = executor.verify_output(1, verifier_backend).unwrap();
         assert_eq!(code, 0);
     }
