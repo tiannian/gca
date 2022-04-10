@@ -67,13 +67,19 @@ pub mod tests {
         verifier_backend.add_host("_gca_log", log.clone());
         verifier_backend.add_host("_gca_gas", measurer.clone());
 
-        let code = executor.verify_output(0, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(0, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
         let mut verifier_backend = B::new();
         verifier_backend.add_host("_gca_log", log.clone());
         verifier_backend.add_host("_gca_gas", measurer.clone());
 
-        let code = executor.verify_output(1, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(1, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
     }
 }

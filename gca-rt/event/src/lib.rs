@@ -1,21 +1,22 @@
 #![no_std]
 
-use cstr_core::c_char;
-
-mod utils;
-
+#[link(wasm_import_module = "_gca_log")]
 extern "C" {
-    fn _emit(
-        name_ptr: *const c_char,
+    fn _gca_emit(
+        name_ptr: *const u8,
+        name_len: usize,
         key_ptr: *const u8,
         key_len: usize,
         val_ptr: *const u8,
         val_len: usize,
+        index: bool,
     );
 }
 
-pub fn emit(name: &str, key: &[u8], value: &[u8]) {
-    let name_ptr = utils::str_to_ptr(name);
+pub fn emit(name: &str, key: &[u8], value: &[u8], index: bool) {
+    let name_ptr = name.as_ptr();
+    let name_len = name.len();
+
     let key_ptr = key.as_ptr();
     let key_len = key.len();
 
@@ -23,6 +24,6 @@ pub fn emit(name: &str, key: &[u8], value: &[u8]) {
     let val_len = value.len();
 
     unsafe {
-        _emit(name_ptr, key_ptr, key_len, val_ptr, val_len);
+        _gca_emit(name_ptr, name_len, key_ptr, key_len, val_ptr, val_len, index);
     }
 }

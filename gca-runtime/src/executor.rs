@@ -130,7 +130,11 @@ impl Executor {
         }
     }
 
-    fn verify_operation_script<B: Backend>(&self, code: &[u8], backend: B) -> Result<(i32, B::Instance)> {
+    fn verify_operation_script<B: Backend>(
+        &self,
+        code: &[u8],
+        backend: B,
+    ) -> Result<(i32, B::Instance)> {
         let module = B::Module::load_bytes(code)?;
 
         let mut instance = backend.instance(&module, &[])?;
@@ -142,7 +146,11 @@ impl Executor {
         }
     }
 
-    pub fn verify_output<B: Backend>(&self, index: usize, backend: B) -> Result<Option<(i32, B::Instance)>> {
+    pub fn verify_output<B: Backend>(
+        &self,
+        index: usize,
+        backend: B,
+    ) -> Result<Option<(i32, B::Instance)>> {
         let output = self
             .transaction
             .outputs
@@ -154,7 +162,8 @@ impl Executor {
                 .get(verifier)
                 .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
             if let OutputData::Data(code) = &i.data {
-                self.verify_output_script(index, code, backend).map(|v| Some(v))
+                self.verify_output_script(index, code, backend)
+                    .map(|v| Some(v))
             } else {
                 Err(Error::ErrOnlyDataCanLoad)
             }
@@ -291,10 +300,16 @@ pub mod tests {
         assert_eq!(code.0, 0);
 
         let verifier_backend = B::new();
-        let code = executor.verify_output(0, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(0, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
         let verifier_backend = B::new();
-        let code = executor.verify_output(1, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(1, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
     }
 
@@ -327,11 +342,17 @@ pub mod tests {
 
         let mut verifier_backend = B::new();
         verifier_backend.add_host("_gca_log", log.clone());
-        let code = executor.verify_output(0, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(0, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
         let mut verifier_backend = B::new();
         verifier_backend.add_host("_gca_log", log.clone());
-        let code = executor.verify_output(1, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(1, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
     }
 
@@ -368,13 +389,19 @@ pub mod tests {
         verifier_backend.add_host("_gca_log", log.clone());
         verifier_backend.add_host("_gca_env", env.clone());
 
-        let code = executor.verify_output(0, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(0, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
         let mut verifier_backend = B::new();
         verifier_backend.add_host("_gca_log", log.clone());
         verifier_backend.add_host("_gca_env", env.clone());
 
-        let code = executor.verify_output(1, verifier_backend).unwrap().unwrap();
+        let code = executor
+            .verify_output(1, verifier_backend)
+            .unwrap()
+            .unwrap();
         assert_eq!(code.0, 0);
     }
 
