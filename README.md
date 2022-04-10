@@ -24,7 +24,7 @@
     - [ ] block: access block.
     - [ ] tx: access current execute transaction.
     - [X] log: support `log` crate.
-    - [ ] event: emmit event on 
+    - [X] event: emmit event on 
 - [X] Testing and Examples.
     - [X] Empty entry function.
     - [X] Log.
