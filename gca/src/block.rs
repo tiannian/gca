@@ -1,5 +1,6 @@
 use crate::{BlockHash, BlockHeight, MerkleHash, NodeAddress, Timestamp};
 
+#[derive(Debug, Default)]
 pub struct BlockHeader {
     pub height: BlockHeight,
     pub time: Option<Timestamp>,
@@ -8,6 +9,7 @@ pub struct BlockHeader {
     pub proposer: NodeAddress,
 }
 
+#[derive(Debug, Default)]
 pub struct Block {
     pub hash: BlockHash,
     pub header: BlockHeader,
