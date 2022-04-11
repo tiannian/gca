@@ -39,11 +39,19 @@ impl OutputId {
     }
 }
 
+#[derive(Debug)]
 pub enum InputOperation {
     Input(u32),
     Reference(String, u32),
 }
 
+impl Default for InputOperation {
+    fn default() -> Self {
+        InputOperation::Input(0)
+    }
+}
+
+#[derive(Debug, Default)]
 pub struct Input {
     pub output_id: OutputId,
     pub unlock: Vec<u8>,

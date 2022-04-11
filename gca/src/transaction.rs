@@ -2,6 +2,7 @@ use alloc::vec::Vec;
 
 use crate::{Input, Memo, Output, Txhash};
 
+#[derive(Debug, Default)]
 pub struct Transaction {
     pub txhash: Txhash,
     pub inputs: Vec<Input>,
