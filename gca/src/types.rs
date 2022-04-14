@@ -1,35 +1,37 @@
 use alloc::vec::Vec;
 use primitive_types::{H160, H256};
 
+macro_rules! impl_traits {
+    ($ty:ty, $len:expr ) => {
+        impl AsRef<[u8]> for $ty {
+            fn as_ref(&self) -> &[u8] {
+                self.0.as_bytes()
+            }
+        }
+
+        impl AsMut<[u8]> for $ty {
+            fn as_mut(&mut self) -> &mut [u8] {
+                self.0.as_bytes_mut()
+            }
+        }
+
+        impl From<[u8; $len]> for $ty {
+            fn from(b: [u8; $len]) -> Self {
+                Self(From::from(b))
+            }
+        }
+    }
+}
+
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct BlockHash(pub H256);
 
-impl AsRef<[u8]> for BlockHash {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_bytes()
-    }
-}
-
-impl From<[u8; 32]> for BlockHash {
-    fn from(b: [u8; 32]) -> Self {
-        Self(H256(b))
-    }
-}
+impl_traits!(BlockHash, 32);
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Txhash(pub H256);
 
-impl From<[u8; 32]> for Txhash {
-    fn from(b: [u8; 32]) -> Self {
-        Self(H256(b))
-    }
-}
-
-impl AsRef<[u8]> for Txhash {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_bytes()
-    }
-}
+impl_traits!(Txhash, 32);
 
 #[derive(Debug, Default)]
 pub struct MemoOperation(pub u32);
@@ -52,17 +54,7 @@ pub struct BlockHeight(pub i64);
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MerkleHash(pub H256);
 
-impl From<[u8; 32]> for MerkleHash {
-    fn from(b: [u8; 32]) -> Self {
-        Self(H256(b))
-    }
-}
-
-impl AsRef<[u8]> for MerkleHash {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_bytes()
-    }
-}
+impl_traits!(MerkleHash, 32);
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Timestamp(pub i64);
@@ -70,14 +62,5 @@ pub struct Timestamp(pub i64);
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct NodeAddress(pub H160);
 
-impl From<[u8; 20]> for NodeAddress {
-    fn from(b: [u8; 20]) -> Self {
-        Self(H160(b))
-    }
-}
+impl_traits!(NodeAddress, 20);
 
-impl AsRef<[u8]> for NodeAddress {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_bytes()
-    }
-}
