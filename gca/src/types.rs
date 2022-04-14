@@ -10,8 +10,20 @@ impl AsRef<[u8]> for BlockHash {
     }
 }
 
+impl From<[u8; 32]> for BlockHash {
+    fn from(b: [u8; 32]) -> Self {
+        Self(H256(b))
+    }
+}
+
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Txhash(pub H256);
+
+impl From<[u8; 32]> for Txhash {
+    fn from(b: [u8; 32]) -> Self {
+        Self(H256(b))
+    }
+}
 
 impl AsRef<[u8]> for Txhash {
     fn as_ref(&self) -> &[u8] {
@@ -40,6 +52,12 @@ pub struct BlockHeight(pub i64);
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MerkleHash(pub H256);
 
+impl From<[u8; 32]> for MerkleHash {
+    fn from(b: [u8; 32]) -> Self {
+        Self(H256(b))
+    }
+}
+
 impl AsRef<[u8]> for MerkleHash {
     fn as_ref(&self) -> &[u8] {
         self.0.as_bytes()
@@ -51,6 +69,12 @@ pub struct Timestamp(pub i64);
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct NodeAddress(pub H160);
+
+impl From<[u8; 20]> for NodeAddress {
+    fn from(b: [u8; 20]) -> Self {
+        Self(H160(b))
+    }
+}
 
 impl AsRef<[u8]> for NodeAddress {
     fn as_ref(&self) -> &[u8] {
