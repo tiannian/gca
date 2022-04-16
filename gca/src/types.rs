@@ -20,7 +20,7 @@ macro_rules! impl_traits {
                 Self(From::from(b))
             }
         }
-    }
+    };
 }
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
@@ -63,4 +63,3 @@ pub struct Timestamp(pub i64);
 pub struct NodeAddress(pub H160);
 
 impl_traits!(NodeAddress, 20);
-

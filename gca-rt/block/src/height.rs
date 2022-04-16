@@ -1,47 +1,25 @@
-use gca_core::{Block, BlockHash, BlockHeight};
-
-use crate::get_block;
+use gca_core::{BlockHash, BlockHeight};
+use primitive_types::H256;
 
 extern "C" {
-    fn _block_get_height_by_hash(hash: *const u8) -> i64;
+    // Only get current chain's hash.
+    fn _block_get_hash_by_height(height: i64, hash: *mut u8);
 
-    fn _block_get_pending_block_height() -> i64;
-
-    fn _block_get_latest_block_height() -> i64;
+    fn _block_get_latest_block_hash(hash: *mut u8);
 }
 
-pub fn get_height_by_hash(hash: BlockHash) -> BlockHeight {
-    let height = unsafe { _block_get_height_by_hash(hash.0.as_ptr()) };
+pub fn get_hash_by_height(height: BlockHeight) -> BlockHash {
+    let mut hash = H256::default();
 
-    BlockHeight(height)
+    unsafe { _block_get_hash_by_height(height.0, hash.as_mut_ptr()) };
+
+    BlockHash(hash)
 }
 
-pub fn get_block_by_hash(hash: BlockHash) -> Block {
-    let height = get_height_by_hash(hash);
+pub fn get_latest_hash() -> BlockHash {
+    let mut hash = H256::default();
 
-    get_block(height)
-}
+    unsafe { _block_get_latest_block_hash(hash.as_mut_ptr()) };
 
-pub fn get_pending_height() -> BlockHeight {
-    let height = unsafe { _block_get_pending_block_height() };
-
-    BlockHeight(height)
-}
-
-pub fn get_pending_block() -> Block {
-    let height = get_pending_height();
-
-    get_block(height)
-}
-
-pub fn get_latest_height() -> BlockHeight {
-    let height = unsafe { _block_get_latest_block_height() };
-
-    BlockHeight(height)
-}
-
-pub fn get_latest_block() -> Block {
-    let height = get_latest_height();
-
-    get_block(height)
+    BlockHash(hash)
 }

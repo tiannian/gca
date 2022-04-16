@@ -111,9 +111,7 @@ impl<M: Instance + 'static> Host<M> for EventEmiter<M> {
         let value = get_bytes(val_ptr, val_len, &memory)?;
         let index = val_to_i32(index)? == 0;
 
-        let attr = EventAttribute {
-            key, value, index
-        };
+        let attr = EventAttribute { key, value, index };
 
         if let Some(v) = self.events.get_mut(&name) {
             v.push(attr);
