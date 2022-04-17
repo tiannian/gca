@@ -36,7 +36,7 @@ pub fn get_block(hash: BlockHash) -> Block {
 
     unsafe { _block_get_txs_hash_by_hash(h, txs_hash.as_mut_ptr()) }
 
-    let proposer = H160::default();
+    let mut proposer = H160::default();
 
     unsafe { _block_get_proposer_by_hash(h, proposer.as_mut_ptr()) };
 
