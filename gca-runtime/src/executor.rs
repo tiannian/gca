@@ -5,7 +5,7 @@ use gca_core::{InputOperation, Output, OutputData, OutputId, OutputOperation, Tr
 use crate::{Backend, Error, Instance, Memory, Module, ModuleInfo, Result, Val};
 
 pub struct Executor {
-    transaction: Transaction,
+    pub transaction: Transaction,
     pub outputs: BTreeMap<OutputId, Output>,
     pub operations: BTreeMap<OutputOperation, OutputId>,
     reference: BTreeMap<u32, Vec<(String, OutputId)>>,
