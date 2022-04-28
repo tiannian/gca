@@ -19,7 +19,7 @@ impl From<EnvError> for Box<dyn Debug + Sync + Send> {
 }
 
 pub struct Env<M> {
-    chain_id: &'static str,
+    chain_id: String,
     func_def: Arc<Vec<FuncDefine>>,
     instance: Option<M>,
 }
@@ -27,7 +27,7 @@ pub struct Env<M> {
 impl<M> Clone for Env<M> {
     fn clone(&self) -> Self {
         Self {
-            chain_id: self.chain_id,
+            chain_id: self.chain_id.clone(),
             func_def: self.func_def.clone(),
             instance: None,
         }
@@ -35,7 +35,7 @@ impl<M> Clone for Env<M> {
 }
 
 impl<M> Env<M> {
-    pub fn new(chain_id: &'static str) -> Self {
+    pub fn new(chain_id: &str) -> Self {
         let f = FuncDefine {
             name: "_gca_env_get_chain_id",
             parmas: vec![],
@@ -46,7 +46,7 @@ impl<M> Env<M> {
 
         Self {
             func_def,
-            chain_id,
+            chain_id: chain_id.to_string(),
             instance: None,
         }
     }
