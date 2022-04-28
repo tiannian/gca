@@ -42,29 +42,21 @@ impl Executor {
         idx: usize,
         backend: B,
     ) -> Result<(i32, B::Instance)> {
-        if let Some(input) = self.transaction.inputs.get(idx) {
-            // try to get input's output.
-            if !matches!(input.operation, InputOperation::Input(_)) {
-                return Err(Error::ErrMustBeOperationInput);
-            }
+        let input = self.transaction.inputs.get(idx).ok_or(Error::ErrInputsCount)?;
 
-            if let Some(output) = self.outputs.get(&input.output_id) {
-                // try to get lock code.
-                if let Some(lock_output) = self.outputs.get(&output.locker) {
-                    if let OutputData::Data(code) = &lock_output.data {
-                        let data = &input.unlock;
-                        Ok(self.unlock(code, data, backend)?)
-                    } else {
-                        Err(Error::ErrOnlyDataCanLoad)
-                    }
-                } else {
-                    Err(Error::ErrNoUnspentOutputPreLoad)
-                }
-            } else {
-                Err(Error::ErrNoUnspentOutputPreLoad)
-            }
+        // try to get input's output.
+        if !matches!(input.operation, InputOperation::Input(_)) {
+            return Err(Error::ErrMustBeOperationInput);
+        }
+
+        let output = self.outputs.get(&input.output_id).ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+        let lock_output = self.outputs.get(&output.locker).ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+
+        if let OutputData::Data(code) = &lock_output.data {
+            let data = &input.unlock;
+            Ok(self.unlock(code, data, backend)?)
         } else {
-            Err(Error::ErrInputsCount)
+            Err(Error::ErrOnlyDataCanLoad)
         }
     }
 
@@ -156,6 +148,7 @@ impl Executor {
             .outputs
             .get(index)
             .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+
         if let Some(verifier) = &output.verifier {
             let i = self
                 .outputs
