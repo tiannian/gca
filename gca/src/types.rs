@@ -33,10 +33,10 @@ pub struct Txhash(pub H256);
 
 impl_traits!(Txhash, 32);
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MemoOperation(pub u32);
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Memo {
     pub operation: MemoOperation,
     pub data: Vec<u8>,

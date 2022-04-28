@@ -42,12 +42,9 @@ impl wasmi::ModuleImportResolver for ModuleHostImport {
     ) -> Result<FuncRef, wasmi::Error> {
         match self {
             ModuleHostImport::Host(h) => {
-                let idx = h
-                    .get(field_name)
-                    .ok_or_else(|| wasmi::Error::Instantiation(format!(
-                        "Export {} not found",
-                        field_name
-                    )))?;
+                let idx = h.get(field_name).ok_or_else(|| {
+                    wasmi::Error::Instantiation(format!("Export {} not found", field_name))
+                })?;
 
                 Ok(wasmi::FuncInstance::alloc_host(signature.clone(), *idx))
             }
@@ -114,13 +111,9 @@ impl wasmi::ImportResolver for HostImports {
         field_name: &str,
         signature: &Signature,
     ) -> Result<FuncRef, wasmi::Error> {
-        let module = self
-            .0
-            .get(_module_name)
-            .ok_or_else(|| wasmi::Error::Instantiation(format!(
-                "Export module {} not found",
-                _module_name
-            )))?;
+        let module = self.0.get(_module_name).ok_or_else(|| {
+            wasmi::Error::Instantiation(format!("Export module {} not found", _module_name))
+        })?;
 
         module.resolve_func(field_name, signature)
     }
@@ -131,13 +124,9 @@ impl wasmi::ImportResolver for HostImports {
         field_name: &str,
         descriptor: &wasmi::TableDescriptor,
     ) -> Result<wasmi::TableRef, wasmi::Error> {
-        let module = self
-            .0
-            .get(module_name)
-            .ok_or_else(|| wasmi::Error::Instantiation(format!(
-                "Export module {} not found",
-                module_name
-            )))?;
+        let module = self.0.get(module_name).ok_or_else(|| {
+            wasmi::Error::Instantiation(format!("Export module {} not found", module_name))
+        })?;
 
         module.resolve_table(field_name, descriptor)
     }
@@ -148,13 +137,9 @@ impl wasmi::ImportResolver for HostImports {
         field_name: &str,
         descriptor: &wasmi::GlobalDescriptor,
     ) -> Result<wasmi::GlobalRef, wasmi::Error> {
-        let module = self
-            .0
-            .get(module_name)
-            .ok_or_else(|| wasmi::Error::Instantiation(format!(
-                "Export module {} not found",
-                module_name
-            )))?;
+        let module = self.0.get(module_name).ok_or_else(|| {
+            wasmi::Error::Instantiation(format!("Export module {} not found", module_name))
+        })?;
 
         module.resolve_global(field_name, descriptor)
     }
@@ -165,13 +150,9 @@ impl wasmi::ImportResolver for HostImports {
         field_name: &str,
         descriptor: &wasmi::MemoryDescriptor,
     ) -> Result<wasmi::MemoryRef, wasmi::Error> {
-        let module = self
-            .0
-            .get(module_name)
-            .ok_or_else(|| wasmi::Error::Instantiation(format!(
-                "Export module {} not found",
-                module_name
-            )))?;
+        let module = self.0.get(module_name).ok_or_else(|| {
+            wasmi::Error::Instantiation(format!("Export module {} not found", module_name))
+        })?;
 
         module.resolve_memory(field_name, descriptor)
     }

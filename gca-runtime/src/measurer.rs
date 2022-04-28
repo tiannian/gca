@@ -52,11 +52,11 @@ pub mod tests {
 
         assert_eq!(code.0, 0);
 
-   //      let mut operation_backend = B::new();
+        //      let mut operation_backend = B::new();
         // operation_backend.add_host("_gca_log", log.clone());
         // operation_backend.add_host("_gca_gas", measurer.clone());
-//
-//         let operation = OutputOperation(0);
+        //
+        //         let operation = OutputOperation(0);
         // let code = executor
         //     .verify_operation(operation, operation_backend)
         //     .unwrap();
@@ -81,6 +81,6 @@ pub mod tests {
         //     .verify_output(1, verifier_backend)
         //     .unwrap()
         //     .unwrap();
-//         assert_eq!(code.0, 0);
+        //         assert_eq!(code.0, 0);
     }
 }

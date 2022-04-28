@@ -38,10 +38,6 @@ impl<M> GcaMeasurer<M> {
         }
     }
 
-    //     pub fn from_host(host: Box<dyn Host<M>>) -> Self {
-    // host as Self
-    //     }
-
     pub fn gas(&self) -> u64 {
         self.gas
     }
@@ -66,10 +62,6 @@ impl<M: Instance + 'static> Host<M> for GcaMeasurer<M> {
     }
 
     fn set_instance(&mut self, _instance: M) {}
-
-    //     fn as_any(&self) -> &dyn Any {
-    // self
-    //     }
 
     fn call_func(
         &mut self,

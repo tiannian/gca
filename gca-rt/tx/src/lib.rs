@@ -7,9 +7,6 @@ pub use txhash::*;
 
 pub mod input;
 
-mod error;
-pub use error::*;
-
 pub mod memo;
 
 pub mod output;

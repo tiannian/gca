@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 
 use crate::{Amount, OutputId, OutputOperation};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OutputData {
     NativeToken(Amount),
     Data(Vec<u8>),
@@ -14,14 +14,14 @@ impl Default for OutputData {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct OutputCore {
     pub data: OutputData,
     pub locker: OutputId,
     pub verifier: Option<OutputId>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Output {
     pub core: OutputCore,
     pub operation: OutputOperation,

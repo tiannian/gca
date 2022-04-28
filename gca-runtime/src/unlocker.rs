@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 
-use gca_core::{OutputId, Input, InputOperation, OutputData, OutputCore};
+use gca_core::{Input, InputOperation, OutputCore, OutputData, OutputId};
 
-use crate::{Backend, Result, Error, Val, Instance, Module, Memory};
+use crate::{Backend, Error, Instance, Memory, Module, Result, Val};
 
 pub struct Unlocker {
     pub cores: BTreeMap<OutputId, OutputCore>,
@@ -28,8 +28,14 @@ impl Unlocker {
             return Err(Error::ErrMustBeOperationInput);
         }
 
-        let output = self.cores.get(&input.output_id).ok_or(Error::ErrNoUnspentOutputPreLoad)?;
-        let lock_output = self.cores.get(&output.locker).ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+        let output = self
+            .cores
+            .get(&input.output_id)
+            .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
+        let lock_output = self
+            .cores
+            .get(&output.locker)
+            .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
 
         if let OutputData::Data(code) = &lock_output.data {
             let data = &input.unlock;
@@ -83,11 +89,11 @@ impl Unlocker {
 
 #[cfg(test)]
 pub mod tests {
-    use std::{env, path::Path, fs};
+    use std::{env, fs, path::Path};
 
-    use gca_core::{OutputId, OutputData, Amount, OutputCore, Input, InputOperation};
+    use gca_core::{Amount, Input, InputOperation, OutputCore, OutputData, OutputId};
 
-    use crate::{Unlocker, Backend, host};
+    use crate::{host, Backend, Unlocker};
 
     pub fn build_input() -> Input {
         let unspend_output_id = OutputId::from_hex(
@@ -176,10 +182,10 @@ pub mod tests {
 
         // Insert backend output.
         let unspend_core = OutputCore {
-                data: OutputData::NativeToken(Amount(100)),
-                locker: wasm_output_id.clone(),
-                verifier: Some(wasm_output_id.clone()),
-            };
+            data: OutputData::NativeToken(Amount(100)),
+            locker: wasm_output_id.clone(),
+            verifier: Some(wasm_output_id.clone()),
+        };
         unlocker.cores.insert(unspend_output_id, unspend_core);
 
         let wasm_output = OutputCore {
@@ -192,4 +198,3 @@ pub mod tests {
         unlocker
     }
 }
-
