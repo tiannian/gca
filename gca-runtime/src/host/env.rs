@@ -80,12 +80,12 @@ impl<M: Instance + 'static> Host<M> for Env<M> {
 
         if let Some(Val::I32(ptr)) = instance
             .call_func_for_host("_gca_env_alloc", &args)
-            .map_err(|e| EnvError::CallFuncError(e))?
+            .map_err(EnvError::CallFuncError)?
         {
             let memory = instance.get_memory("memory").ok_or(EnvError::ErrNoMemory)?;
             memory
                 .write(ptr as usize, self.chain_id.as_bytes())
-                .map_err(|e| EnvError::MemoryError(e))?;
+                .map_err(EnvError::MemoryError)?;
             Ok(Some(Val::I32(ptr)))
         } else {
             Err(EnvError::ErrAllocFormatError.into())

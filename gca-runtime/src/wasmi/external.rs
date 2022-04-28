@@ -37,21 +37,21 @@ impl wasmi::Externals for WasmiExternal {
         let (module_idx, name) =
             self.host_idxs
                 .get(&index)
-                .ok_or(Trap::new(TrapKind::Host(Box::new(
+                .ok_or_else(|| Trap::new(TrapKind::Host(Box::new(
                     ExternalError::NoTargetIndex,
                 ))))?;
 
         let host = self
             .hosts
             .get_mut(*module_idx)
-            .ok_or(Trap::new(TrapKind::Host(Box::new(
+            .ok_or_else(|| Trap::new(TrapKind::Host(Box::new(
                 ExternalError::NoTargetIndex,
             ))))?;
 
         let mut values = Vec::new();
 
         for arg in args.as_ref() {
-            let val: Val = arg.clone().into();
+            let val: Val = (*arg).into();
 
             values.push(val);
         }

@@ -38,7 +38,7 @@ impl Backend for WasmiBackend {
     ) -> Result<Self::Instance> {
         let mut this = self;
 
-        let mut imports = HostImports::new();
+        let mut imports = HostImports::default();
 
         for i in 0..this.hosts.len() {
             let (name, host) = &this.hosts[i];
@@ -51,7 +51,7 @@ impl Backend for WasmiBackend {
                 }
             }
 
-            imports.add_module(&name, import);
+            imports.add_module(name, import);
         }
 
         log::info!("Host index map for wasmi:");

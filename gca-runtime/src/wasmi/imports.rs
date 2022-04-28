@@ -15,8 +15,7 @@ impl ModuleHostImport {
 
         let defines = host.resolve_functions();
 
-        for i in 0..defines.len() {
-            let define = &defines[i];
+        for (i, define) in defines.iter().enumerate() {
             inner.insert(define.name, i + offset);
         }
 
@@ -45,7 +44,7 @@ impl wasmi::ModuleImportResolver for ModuleHostImport {
             ModuleHostImport::Host(h) => {
                 let idx = h
                     .get(field_name)
-                    .ok_or(wasmi::Error::Instantiation(format!(
+                    .ok_or_else(|| wasmi::Error::Instantiation(format!(
                         "Export {} not found",
                         field_name
                     )))?;
@@ -99,13 +98,10 @@ impl wasmi::ModuleImportResolver for ModuleHostImport {
     }
 }
 
+#[derive(Default)]
 pub struct HostImports(pub(crate) BTreeMap<String, ModuleHostImport>);
 
 impl HostImports {
-    pub fn new() -> Self {
-        Self(BTreeMap::new())
-    }
-
     pub fn add_module(&mut self, name: &str, module: ModuleHostImport) {
         self.0.insert(String::from(name), module);
     }
@@ -121,7 +117,7 @@ impl wasmi::ImportResolver for HostImports {
         let module = self
             .0
             .get(_module_name)
-            .ok_or(wasmi::Error::Instantiation(format!(
+            .ok_or_else(|| wasmi::Error::Instantiation(format!(
                 "Export module {} not found",
                 _module_name
             )))?;
@@ -138,7 +134,7 @@ impl wasmi::ImportResolver for HostImports {
         let module = self
             .0
             .get(module_name)
-            .ok_or(wasmi::Error::Instantiation(format!(
+            .ok_or_else(|| wasmi::Error::Instantiation(format!(
                 "Export module {} not found",
                 module_name
             )))?;
@@ -155,7 +151,7 @@ impl wasmi::ImportResolver for HostImports {
         let module = self
             .0
             .get(module_name)
-            .ok_or(wasmi::Error::Instantiation(format!(
+            .ok_or_else(|| wasmi::Error::Instantiation(format!(
                 "Export module {} not found",
                 module_name
             )))?;
@@ -172,7 +168,7 @@ impl wasmi::ImportResolver for HostImports {
         let module = self
             .0
             .get(module_name)
-            .ok_or(wasmi::Error::Instantiation(format!(
+            .ok_or_else(|| wasmi::Error::Instantiation(format!(
                 "Export module {} not found",
                 module_name
             )))?;

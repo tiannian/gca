@@ -17,7 +17,7 @@ impl WasmiInstance {
         let ret = if host {
             self.instance
                 .invoke_export(name, &args, &mut wasmi::NopExternals)?
-                .map(|v| Val::from(v))
+                .map(Val::from)
         } else {
             self.instance
                 .invoke_export(
@@ -25,9 +25,9 @@ impl WasmiInstance {
                     &args,
                     self.external
                         .as_mut()
-                        .ok_or(Error::BackendError(String::from("No external")))?,
+                        .ok_or_else(|| Error::BackendError(String::from("No external")))?,
                 )?
-                .map(|v| Val::from(v))
+                .map(Val::from)
         };
 
         Ok(ret)

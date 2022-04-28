@@ -156,7 +156,7 @@ impl Executor {
                 .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
             if let OutputData::Data(code) = &i.data {
                 self.verify_output_script(index, code, backend)
-                    .map(|v| Some(v))
+                    .map(Some)
             } else {
                 Err(Error::ErrOnlyDataCanLoad)
             }
@@ -316,7 +316,7 @@ pub mod tests {
         let executor = build_exeutor(bin);
 
         // instant host
-        let log = host::Logger::<B::Instance>::new();
+        let log = host::Logger::<B::Instance>::default();
 
         let mut unlock_backend = B::new();
         unlock_backend.add_host("_gca_log", log.clone());
@@ -359,7 +359,7 @@ pub mod tests {
         let executor = build_exeutor(bin);
 
         // instant host
-        let log = host::Logger::<B::Instance>::new();
+        let log = host::Logger::<B::Instance>::default();
         let env = host::Env::<B::Instance>::new("chain id");
 
         let mut unlock_backend = B::new();

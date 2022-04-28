@@ -39,8 +39,8 @@ impl<M> Clone for Logger<M> {
     }
 }
 
-impl<M> Logger<M> {
-    pub fn new() -> Self {
+impl<M> Default for Logger<M> {
+    fn default() -> Self {
         let f = FuncDefine {
             name: "_gca_log",
             parmas: vec![
@@ -129,9 +129,7 @@ fn get_string(ptr: &Val, len: &Val, memory: &impl Memory) -> Result<String, Logg
     let ptr = val_to_i32(ptr)?;
     let len = val_to_i32(len)?;
 
-    let mut buf = Vec::<u8>::with_capacity(len as usize);
-
-    buf.resize(len as usize, 0);
+    let mut buf = vec![0u8; len as usize];
 
     memory
         .read(ptr as usize, &mut buf)

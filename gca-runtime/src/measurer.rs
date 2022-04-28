@@ -31,7 +31,7 @@ pub mod tests {
         let executor = crate::executor::tests::build_exeutor(gased_module);
 
         // instant host
-        let log = host::Logger::<B::Instance>::new();
+        let log = host::Logger::<B::Instance>::default();
         let measurer = host::GcaMeasurer::<B::Instance>::new(10000);
 
         let mut unlock_backend = B::new();
