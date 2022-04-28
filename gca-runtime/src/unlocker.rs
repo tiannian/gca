@@ -185,6 +185,7 @@ pub mod tests {
             data: OutputData::NativeToken(Amount(100)),
             locker: wasm_output_id.clone(),
             verifier: Some(wasm_output_id.clone()),
+            owner: Vec::new(),
         };
         unlocker.cores.insert(unspend_output_id, unspend_core);
 
@@ -192,6 +193,7 @@ pub mod tests {
             data: OutputData::Data(bin),
             locker: wasm_output_id.clone(),
             verifier: Some(wasm_output_id.clone()),
+            owner: Vec::new(),
         };
         unlocker.cores.insert(wasm_output_id.clone(), wasm_output);
 

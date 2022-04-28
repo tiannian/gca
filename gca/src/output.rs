@@ -19,6 +19,7 @@ pub struct OutputCore {
     pub data: OutputData,
     pub locker: OutputId,
     pub verifier: Option<OutputId>,
+    pub owner: Vec<u8>,
 }
 
 #[derive(Debug, Default, Clone)]
