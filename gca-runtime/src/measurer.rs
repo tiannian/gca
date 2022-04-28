@@ -14,11 +14,9 @@ pub fn inject_gas(code: &[u8], rules: impl Rules) -> Result<Vec<u8>> {
 pub mod tests {
     use std::{collections::BTreeMap, env, fs, path::Path};
 
-    use gca_core::OutputOperation;
-
     use crate::{host, inject_gas, Backend, Instance};
 
-    pub fn test_gas<B: Backend>() {
+    pub fn test_gas_unlocker<B: Backend>() {
         let env = env::var("CARGO_MANIFEST_DIR").unwrap();
         let wasm_path =
             Path::new(&env).join("../examples/target/wasm32-unknown-unknown/release/log.wasm");
@@ -28,7 +26,7 @@ pub mod tests {
 
         let gased_module = inject_gas(&bin, set).unwrap();
 
-        let executor = crate::executor::tests::build_exeutor(gased_module);
+        let executor = crate::unlocker::tests::build_unlocker(gased_module);
 
         // instant host
         let log = host::Logger::<B::Instance>::default();
@@ -37,7 +35,10 @@ pub mod tests {
         let mut unlock_backend = B::new();
         unlock_backend.add_host("_gca_log", log.clone());
         unlock_backend.add_host("_gca_gas", measurer.clone());
-        let code = executor.unlock_by_index(0, unlock_backend).unwrap();
+
+        let input = crate::unlocker::tests::build_input();
+
+        let code = executor.unlock_input(&input, unlock_backend).unwrap();
 
         let any_host = code.1.get_host("_gca_gas").unwrap();
 
@@ -51,35 +52,35 @@ pub mod tests {
 
         assert_eq!(code.0, 0);
 
-        let mut operation_backend = B::new();
-        operation_backend.add_host("_gca_log", log.clone());
-        operation_backend.add_host("_gca_gas", measurer.clone());
-
-        let operation = OutputOperation(0);
-        let code = executor
-            .verify_operation(operation, operation_backend)
-            .unwrap();
-        assert_eq!(code.0, 0);
-
-        // let gas operation_backend.
-
-        let mut verifier_backend = B::new();
-        verifier_backend.add_host("_gca_log", log.clone());
-        verifier_backend.add_host("_gca_gas", measurer.clone());
-
-        let code = executor
-            .verify_output(0, verifier_backend)
-            .unwrap()
-            .unwrap();
-        assert_eq!(code.0, 0);
-        let mut verifier_backend = B::new();
-        verifier_backend.add_host("_gca_log", log.clone());
-        verifier_backend.add_host("_gca_gas", measurer.clone());
-
-        let code = executor
-            .verify_output(1, verifier_backend)
-            .unwrap()
-            .unwrap();
-        assert_eq!(code.0, 0);
+   //      let mut operation_backend = B::new();
+        // operation_backend.add_host("_gca_log", log.clone());
+        // operation_backend.add_host("_gca_gas", measurer.clone());
+//
+//         let operation = OutputOperation(0);
+        // let code = executor
+        //     .verify_operation(operation, operation_backend)
+        //     .unwrap();
+        // assert_eq!(code.0, 0);
+        //
+        // // let gas operation_backend.
+        //
+        // let mut verifier_backend = B::new();
+        // verifier_backend.add_host("_gca_log", log.clone());
+        // verifier_backend.add_host("_gca_gas", measurer.clone());
+        //
+        // let code = executor
+        //     .verify_output(0, verifier_backend)
+        //     .unwrap()
+        //     .unwrap();
+        // assert_eq!(code.0, 0);
+        // let mut verifier_backend = B::new();
+        // verifier_backend.add_host("_gca_log", log.clone());
+        // verifier_backend.add_host("_gca_gas", measurer.clone());
+        //
+        // let code = executor
+        //     .verify_output(1, verifier_backend)
+        //     .unwrap()
+        //     .unwrap();
+//         assert_eq!(code.0, 0);
     }
 }

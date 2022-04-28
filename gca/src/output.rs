@@ -15,9 +15,14 @@ impl Default for OutputData {
 }
 
 #[derive(Debug, Default)]
-pub struct Output {
+pub struct OutputCore {
     pub data: OutputData,
     pub locker: OutputId,
     pub verifier: Option<OutputId>,
+}
+
+#[derive(Debug, Default)]
+pub struct Output {
+    pub core: OutputCore,
     pub operation: OutputOperation,
 }

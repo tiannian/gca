@@ -1,5 +1,5 @@
 use alloc::vec::Vec;
-use gca_core::{Amount, Output, OutputData, OutputId, OutputOperation};
+use gca_core::{Amount, Output, OutputData, OutputId, OutputOperation, OutputCore};
 
 extern "C" {
     fn _output_get_count() -> usize;
@@ -100,10 +100,14 @@ pub fn get_outputs() -> Vec<Output> {
         let verifier = get_verifier(idx);
         let operation = get_operation(idx);
 
-        let output = Output {
+        let core = OutputCore {
             data,
             locker,
             verifier,
+        };
+
+        let output = Output {
+            core,
             operation,
         };
 

@@ -28,27 +28,27 @@ mod test {
     fn test_empty() {
         init();
 
-        crate::executor::tests::test_empty::<WasmiBackend>();
+        crate::unlocker::tests::test_empty_unlocker::<WasmiBackend>();
     }
 
     #[test]
     fn test_log() {
         init();
 
-        crate::executor::tests::test_log::<WasmiBackend>();
+        crate::unlocker::tests::test_log_unlocker::<WasmiBackend>();
     }
 
     #[test]
     fn test_gas() {
         init();
 
-        crate::measurer::tests::test_gas::<WasmiBackend>();
+        crate::measurer::tests::test_gas_unlocker::<WasmiBackend>();
     }
 
     #[test]
     fn test_chain_id() {
         init();
 
-        crate::executor::tests::test_chain_id::<WasmiBackend>();
+        crate::unlocker::tests::test_chain_id_unlocker::<WasmiBackend>();
     }
 }

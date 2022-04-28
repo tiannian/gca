@@ -37,7 +37,7 @@ impl Executor {
     }
 
     /// Validate this transaction's all input is unlocked?.
-    pub fn unlock_by_index<B: Backend>(
+    pub fn unlock_input<B: Backend>(
         &self,
         idx: usize,
         backend: B,
@@ -281,7 +281,7 @@ pub mod tests {
         let executor = build_exeutor(bin);
 
         let unlock_backend = B::new();
-        let code = executor.unlock_by_index(0, unlock_backend).unwrap();
+        let code = executor.unlock_input(0, unlock_backend).unwrap();
         assert_eq!(code.0, 0);
 
         let operation_backend = B::new();
@@ -320,7 +320,7 @@ pub mod tests {
 
         let mut unlock_backend = B::new();
         unlock_backend.add_host("_gca_log", log.clone());
-        let code = executor.unlock_by_index(0, unlock_backend).unwrap();
+        let code = executor.unlock_input(0, unlock_backend).unwrap();
 
         assert_eq!(code.0, 0);
 
@@ -365,7 +365,7 @@ pub mod tests {
         let mut unlock_backend = B::new();
         unlock_backend.add_host("_gca_log", log.clone());
         unlock_backend.add_host("_gca_env", env.clone());
-        let code = executor.unlock_by_index(0, unlock_backend).unwrap();
+        let code = executor.unlock_input(0, unlock_backend).unwrap();
         assert_eq!(code.0, 0);
 
         let mut operation_backend = B::new();
