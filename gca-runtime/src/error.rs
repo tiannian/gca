@@ -38,6 +38,7 @@ impl From<std::num::TryFromIntError> for Error {
     }
 }
 
+#[cfg(feature = "wasmi-backend")]
 impl From<wasmi::Error> for Error {
     fn from(e: wasmi::Error) -> Self {
         Error::ErrWasmiError(e)
