@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use gca_core::{Input, InputOperation, OutputCore, OutputData, OutputId};
 
-use crate::{Backend, Error, Instance, Memory, Module, Result, Val};
+use crate::{Backend, Error, Instance, Module, Result, Val};
 
 pub struct Unlocker {
     pub cores: BTreeMap<OutputId, OutputCore>,
@@ -18,8 +18,9 @@ impl Default for Unlocker {
 
 impl Unlocker {
     /// Validate this transaction's all input is unlocked?.
-    pub fn unlock_input<B: Backend>(
+    pub fn unlock_input_by_index<B: Backend>(
         &self,
+        idx: u32,
         input: &Input,
         backend: B,
     ) -> Result<(i32, B::Instance)> {
@@ -38,51 +39,24 @@ impl Unlocker {
             .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
 
         if let OutputData::Data(code) = &lock_output.data {
-            let data = &input.unlock;
-            Ok(self.unlock(code, data, backend)?)
+            Ok(self.unlock(code, idx, backend)?)
         } else {
             Err(Error::ErrOnlyDataCanLoad)
         }
     }
 
-    fn unlock<B: Backend>(
-        &self,
-        code: &[u8],
-        data: &[u8],
-        backend: B,
-    ) -> Result<(i32, B::Instance)> {
+    fn unlock<B: Backend>(&self, code: &[u8], idx: u32, backend: B) -> Result<(i32, B::Instance)> {
         // build env and tx backend.
         let module = B::Module::load_bytes(code)?;
 
         let mut instance = backend.instance(&module, &[])?;
 
-        let memory = instance
-            .get_memory("memory")
-            .ok_or(Error::ErrWasmNoMemory)?;
-        // alloc memory space.
-
-        let len: i32 = data.len().try_into()?;
-
-        let ptr = instance.call_func("_gca_env_alloc", &[Val::I32(len)])?;
-
-        log::info!("alloced ptr: {:?}", ptr);
-
-        if let Some(Val::I32(ptr)) = ptr {
-            let offset: usize = ptr.try_into()?;
-
-            memory.write(offset, data)?;
-
-            // call entry.
-
-            if let Some(Val::I32(ret_code)) =
-                instance.call_func("_gca_unlock_entry", &[Val::I32(ptr)])?
-            {
-                Ok((ret_code, instance))
-            } else {
-                Err(Error::ErrReturnCode)
-            }
+        if let Some(Val::I32(ret_code)) =
+            instance.call_func("_gca_unlock_entry", &[Val::I32(idx as i32)])?
+        {
+            Ok((ret_code, instance))
         } else {
-            Err(Error::ErrWasmAllocError)
+            Err(Error::ErrReturnCode)
         }
     }
 }
@@ -120,7 +94,7 @@ pub mod tests {
 
         let input = build_input();
 
-        let code = executor.unlock_input(&input, unlock_backend).unwrap();
+        let code = executor.unlock_input_by_index(0, &input, unlock_backend).unwrap();
 
         assert_eq!(code.0, 0);
     }
@@ -141,7 +115,7 @@ pub mod tests {
         unlock_backend.add_host("_gca_log", log.clone());
 
         let input = build_input();
-        let code = executor.unlock_input(&input, unlock_backend).unwrap();
+        let code = executor.unlock_input_by_index(0, &input, unlock_backend).unwrap();
 
         assert_eq!(code.0, 0);
     }
@@ -163,7 +137,7 @@ pub mod tests {
         unlock_backend.add_host("_gca_env", env.clone());
 
         let input = build_input();
-        let code = executor.unlock_input(&input, unlock_backend).unwrap();
+        let code = executor.unlock_input_by_index(0, &input, unlock_backend).unwrap();
         assert_eq!(code.0, 0);
     }
 
