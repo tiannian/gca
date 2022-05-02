@@ -4,16 +4,9 @@ use gca_core::{Input, InputOperation, OutputCore, OutputData, OutputId};
 
 use crate::{Backend, Error, Instance, Module, Result, Val};
 
+#[derive(Default)]
 pub struct Unlocker {
     pub cores: BTreeMap<OutputId, OutputCore>,
-}
-
-impl Default for Unlocker {
-    fn default() -> Self {
-        Self {
-            cores: BTreeMap::new(),
-        }
-    }
 }
 
 impl Unlocker {
@@ -94,7 +87,9 @@ pub mod tests {
 
         let input = build_input();
 
-        let code = executor.unlock_input_by_index(0, &input, unlock_backend).unwrap();
+        let code = executor
+            .unlock_input_by_index(0, &input, unlock_backend)
+            .unwrap();
 
         assert_eq!(code.0, 0);
     }
@@ -115,7 +110,9 @@ pub mod tests {
         unlock_backend.add_host("_gca_log", log.clone());
 
         let input = build_input();
-        let code = executor.unlock_input_by_index(0, &input, unlock_backend).unwrap();
+        let code = executor
+            .unlock_input_by_index(0, &input, unlock_backend)
+            .unwrap();
 
         assert_eq!(code.0, 0);
     }
@@ -137,7 +134,9 @@ pub mod tests {
         unlock_backend.add_host("_gca_env", env.clone());
 
         let input = build_input();
-        let code = executor.unlock_input_by_index(0, &input, unlock_backend).unwrap();
+        let code = executor
+            .unlock_input_by_index(0, &input, unlock_backend)
+            .unwrap();
         assert_eq!(code.0, 0);
     }
 

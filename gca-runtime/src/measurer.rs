@@ -38,7 +38,9 @@ pub mod tests {
 
         let input = crate::unlocker::tests::build_input();
 
-        let code = executor.unlock_input_by_index(0, &input, unlock_backend).unwrap();
+        let code = executor
+            .unlock_input_by_index(0, &input, unlock_backend)
+            .unwrap();
 
         let any_host = code.1.get_host("_gca_gas").unwrap();
 

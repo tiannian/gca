@@ -32,8 +32,6 @@ pub trait Host<I: Instance>: Downcast + 'static {
         name: &str,
         args: &[Val],
     ) -> std::result::Result<Option<Val>, Box<dyn Debug + Sync + Send>>;
-
-    // fn as_any(&self) -> &dyn Downcast;
 }
 
 downcast_rs::impl_downcast!(Host<I> where I: Instance);
