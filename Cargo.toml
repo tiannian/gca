@@ -4,9 +4,8 @@ members = [
     "gca-rt/log",
     "gca-rt/panic-log",
     "gca-rt/event",
-    # "gca-rt/tx",
     "gca-rt/env",
-    # "gca-rt/block",
+    "gca-rt/receipt-data",
 
     "gca-runtime",
 ]
