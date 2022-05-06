@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use crate::{FuncDefine, Host, Instance, Val, ValTy, Memory};
 
 pub struct ReceiptData<M> {
-    data: Vec<u8>,
+    pub data: Vec<u8>,
     func_def: Vec<FuncDefine>,
     instance: Option<M>,
 }
