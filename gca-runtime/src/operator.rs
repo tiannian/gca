@@ -10,6 +10,22 @@ pub struct Operator {
 }
 
 impl Operator {
+    pub fn check_operation<B: Backend>(
+        &self,
+        operation: OutputOperation,
+        backend: B,
+    ) -> Result<(i32, B::Instance)> {
+        let core = self
+            .operations
+            .get(&operation)
+            .ok_or(Error::ErrNoOperation)?;
+        if let OutputData::Data(code) = &core.data {
+            self.execute(code, true, backend)
+        } else {
+            Err(Error::ErrOnlyDataCanLoad)
+        }
+    }
+
     pub fn execute_operation<B: Backend>(
         &self,
         operation: OutputOperation,
@@ -20,21 +36,36 @@ impl Operator {
             .get(&operation)
             .ok_or(Error::ErrNoOperation)?;
         if let OutputData::Data(code) = &core.data {
-            self.execute(code, backend)
+            self.execute(code, false, backend)
         } else {
             Err(Error::ErrOnlyDataCanLoad)
         }
     }
 
-    fn execute<B: Backend>(&self, code: &[u8], backend: B) -> Result<(i32, B::Instance)> {
+    fn execute<B: Backend>(
+        &self,
+        code: &[u8],
+        check: bool,
+        backend: B,
+    ) -> Result<(i32, B::Instance)> {
         let module = B::Module::load_bytes(code)?;
 
         let mut instance = backend.instance(&module, &[])?;
 
-        if let Some(Val::I32(ret_code)) = instance.call_func("_gca_operation_entry", &[])? {
+        let entry = if check {
+            "_gca_operation_check_entry"
+        } else {
+            "_gca_operation_execute_entry"
+        };
+
+        if let Some(Val::I32(ret_code)) = instance.call_func(entry, &[])? {
             Ok((ret_code, instance))
         } else {
             Err(Error::ErrReturnCode)
         }
     }
 }
+
+// TODO: add unit test here.
+#[cfg(test)]
+mod tests {}
