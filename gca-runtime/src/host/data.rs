@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{FuncDefine, Host, Instance, Val, ValTy, Memory};
+use crate::{FuncDefine, Host, Instance, Memory, Val, ValTy};
 
 pub struct ReceiptData<M> {
     pub data: Vec<u8>,
@@ -73,12 +73,19 @@ impl<M: Instance + 'static> Host<M> for ReceiptData<M> {
         }
 
         if let (Some(Val::I32(ptr)), Some(Val::I32(len))) = (args.get(0), args.get(1)) {
-            let instance = self.instance.as_ref().ok_or(ReceiptDataHostError::NoInstance)?;
-            let memory = instance.get_memory("memory").ok_or(ReceiptDataHostError::NoMemory)?;
+            let instance = self
+                .instance
+                .as_ref()
+                .ok_or(ReceiptDataHostError::NoInstance)?;
+            let memory = instance
+                .get_memory("memory")
+                .ok_or(ReceiptDataHostError::NoMemory)?;
 
             let mut data = vec![0u8; *len as usize];
 
-            memory.read(*ptr as usize, &mut data).map_err(|_| ReceiptDataHostError::NoMemoryReadError)?;
+            memory
+                .read(*ptr as usize, &mut data)
+                .map_err(|_| ReceiptDataHostError::NoMemoryReadError)?;
         } else {
             return Err(ReceiptDataHostError::ArgumentsFormat.into());
         }
