@@ -10,25 +10,10 @@ pub struct Operator {
 }
 
 impl Operator {
-    pub fn check_operation<B: Backend>(
-        &self,
-        operation: OutputOperation,
-        backend: B,
-    ) -> Result<(i32, B::Instance)> {
-        let core = self
-            .operations
-            .get(&operation)
-            .ok_or(Error::ErrNoOperation)?;
-        if let OutputData::Data(code) = &core.data {
-            self.execute(code, true, backend)
-        } else {
-            Err(Error::ErrOnlyDataCanLoad)
-        }
-    }
-
     pub fn execute_operation<B: Backend>(
         &self,
         operation: OutputOperation,
+        is_check: bool,
         backend: B,
     ) -> Result<(i32, B::Instance)> {
         let core = self
@@ -36,7 +21,7 @@ impl Operator {
             .get(&operation)
             .ok_or(Error::ErrNoOperation)?;
         if let OutputData::Data(code) = &core.data {
-            self.execute(code, false, backend)
+            self.execute(code, is_check, backend)
         } else {
             Err(Error::ErrOnlyDataCanLoad)
         }
