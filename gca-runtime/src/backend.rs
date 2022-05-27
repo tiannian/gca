@@ -20,6 +20,8 @@ pub trait Instance: Sized + 'static {
     fn get_memory(&self, name: &str) -> Option<Self::Memory>;
 
     fn get_host(&self, name: &str) -> Option<&dyn Host<Self>>;
+
+    fn get_host_mut(&mut self, name: &str) -> Option<&mut dyn Host<Self>>;
 }
 
 pub trait Host<I: Instance>: Downcast + 'static {

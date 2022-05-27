@@ -63,6 +63,15 @@ impl Instance for WasmiInstance {
         }
         None
     }
+
+    fn get_host_mut(&mut self, name: &str) -> Option<&mut dyn Host<Self>> {
+        for (n, host) in &mut self.external.as_mut()?.hosts {
+            if n == name {
+                return Some(host.as_mut());
+            }
+        }
+        None
+    }
 }
 
 impl From<Val> for wasmi::RuntimeValue {
