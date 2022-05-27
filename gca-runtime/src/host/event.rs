@@ -35,7 +35,7 @@ pub struct EventAttribute {
 pub struct EventEmiter<M> {
     func_def: Arc<Vec<FuncDefine>>,
     instance: Option<M>,
-    events: BTreeMap<String, Vec<EventAttribute>>,
+    pub events: BTreeMap<String, Vec<EventAttribute>>,
 }
 
 impl<M> Clone for EventEmiter<M> {
