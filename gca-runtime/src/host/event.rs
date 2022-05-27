@@ -25,7 +25,7 @@ impl From<EmiterError> for Box<dyn Debug + Sync + Send> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct EventAttribute {
     pub key: Vec<u8>,
     pub value: Vec<u8>,
