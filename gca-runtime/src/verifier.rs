@@ -4,14 +4,14 @@ use gca_core::{InputOperation, OutputCore, OutputData, OutputId, Transaction};
 
 use crate::{Backend, Error, Instance, Module, ModuleInfo, Result, Val};
 
-pub struct Verifier {
+pub struct Verifier<'a> {
     pub cores: BTreeMap<OutputId, OutputCore>,
     pub reference: BTreeMap<u32, Vec<(String, OutputId)>>,
-    pub tx: Transaction,
+    pub tx: &'a Transaction,
 }
 
-impl Verifier {
-    pub fn new(tx: Transaction) -> Self {
+impl<'a> Verifier<'a> {
+    pub fn new(tx: &'a Transaction) -> Self {
         let mut reference: BTreeMap<u32, Vec<(String, OutputId)>> = BTreeMap::new();
 
         for input in &tx.inputs {
