@@ -28,3 +28,6 @@ pub use unlocker::*;
 
 mod operator;
 pub use operator::*;
+
+mod verifier;
+pub use verifier::*;
