@@ -15,10 +15,16 @@ impl Default for OutputData {
 }
 
 #[derive(Debug, Default, Clone)]
+pub struct Verifier {
+    pub output_id: OutputId,
+    pub gas_limit: u64,
+}
+
+#[derive(Debug, Default, Clone)]
 pub struct OutputCore {
     pub data: OutputData,
     pub locker: OutputId,
-    pub verifier: Option<OutputId>,
+    pub verifier: Option<Verifier>,
     pub owner: Vec<u8>,
 }
 
