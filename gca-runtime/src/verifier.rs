@@ -47,7 +47,7 @@ impl<'a> Verifier<'a> {
         if let Some(verifier) = &output.core.verifier {
             let i = self
                 .cores
-                .get(verifier)
+                .get(&verifier.output_id)
                 .ok_or(Error::ErrNoUnspentOutputPreLoad)?;
             if let OutputData::Data(code) = &i.data {
                 self.verify(index as u32, code, backend).map(Some)
