@@ -3,9 +3,16 @@ use alloc::vec::Vec;
 use crate::{Amount, OutputId, OutputOperation};
 
 #[derive(Debug, Clone)]
+pub struct KV {
+    pub key: Vec<u8>,
+    pub value: Vec<u8>,
+}
+
+#[derive(Debug, Clone)]
 pub enum OutputData {
     NativeToken(Amount),
     Data(Vec<u8>),
+    Map(Vec<KV>),
 }
 
 impl Default for OutputData {

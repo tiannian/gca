@@ -58,7 +58,7 @@ impl Unlocker {
 pub mod tests {
     use std::{env, fs, path::Path};
 
-    use gca_core::{Amount, Input, InputOperation, OutputCore, OutputData, OutputId};
+    use gca_core::{Amount, Input, InputOperation, OutputCore, OutputData, OutputId, Verifier};
 
     use crate::{host, Backend, Unlocker};
 
@@ -153,11 +153,16 @@ pub mod tests {
 
         let mut unlocker = Unlocker::default();
 
+        let verifier = Verifier {
+            output_id: wasm_output_id.clone(),
+            gas_limit: 99999999,
+        };
+
         // Insert backend output.
         let unspend_core = OutputCore {
             data: OutputData::NativeToken(Amount(100)),
             locker: wasm_output_id.clone(),
-            verifier: Some(wasm_output_id.clone()),
+            verifier: Some(verifier.clone()),
             owner: Vec::new(),
         };
         unlocker.cores.insert(unspend_output_id, unspend_core);
@@ -165,7 +170,7 @@ pub mod tests {
         let wasm_output = OutputCore {
             data: OutputData::Data(bin),
             locker: wasm_output_id.clone(),
-            verifier: Some(wasm_output_id.clone()),
+            verifier: Some(verifier),
             owner: Vec::new(),
         };
         unlocker.cores.insert(wasm_output_id.clone(), wasm_output);
