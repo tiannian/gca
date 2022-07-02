@@ -2,6 +2,9 @@
 
 extern crate alloc;
 
+#[cfg(test)]
+extern crate std;
+
 mod transaction;
 pub use transaction::*;
 
@@ -19,3 +22,8 @@ pub use error::*;
 
 mod block;
 pub use block::*;
+
+mod prelude;
+pub use prelude::*;
+
+pub mod utils;

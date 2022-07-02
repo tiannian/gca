@@ -23,6 +23,9 @@ macro_rules! impl_traits {
     };
 }
 
+mod block_height;
+pub use block_height::*;
+
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct BlockHash(pub H256);
 
@@ -47,9 +50,6 @@ pub struct OutputOperation(pub u32);
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Amount(pub u64);
-
-#[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
-pub struct BlockHeight(pub i64);
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MerkleHash(pub H256);
