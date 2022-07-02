@@ -2,8 +2,8 @@ use bytes::{Buf, BufMut};
 use digest::{consts::U32, Digest};
 
 use crate::{
-    utils, BlockHash, BlockHeight, FromBytes, IntoBytes, MerkleHash, NodeAddress, Result,
-    Timestamp, ToBytes, BytesSize, Error,
+    utils, BlockHash, BlockHeight, BytesSize, Error, FromBytes, IntoBytes, MerkleHash, NodeAddress,
+    Result, Timestamp, ToBytes,
 };
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]

@@ -22,7 +22,7 @@ impl OutputId {
         let prefix = &s[..2];
 
         if prefix != "0x" {
-            return Err(Error::ErrPrefix);
+            return Err(Error::ErrPrefix("0x"));
         }
 
         let inner = &s[2..66];

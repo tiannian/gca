@@ -1,11 +1,23 @@
-#[derive(Debug)]
+use core::fmt::Debug;
+
 pub enum Error {
-    ErrPrefix,
+    ErrPrefix(&'static str),
     ErrHexError(hex::FromHexError),
     ParseIntError(core::num::ParseIntError),
 
-    // Expect 0, provide 1
+    // Got 0, Expect 1,
     BytesSizeError(usize, usize),
+}
+
+impl Debug for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::ErrPrefix(prefix) => write!(f, "prefix must be {}", prefix),
+            Self::ErrHexError(e) => write!(f, "{:?}", e),
+            Self::ParseIntError(e) => write!(f, "{:?}", e),
+            Self::BytesSizeError(a, b) => write!(f, "Bytes size error. Got {}, Expect {}", a, b),
+        }
+    }
 }
 
 impl From<hex::FromHexError> for Error {

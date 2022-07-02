@@ -1,4 +1,4 @@
-use crate::{utils, FromBytes, IntoBytes, Result, ToBytes, BytesSize, Error};
+use crate::{utils, BytesSize, Error, FromBytes, IntoBytes, Result, ToBytes};
 use bytes::{Buf, BufMut};
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
