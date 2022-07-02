@@ -3,6 +3,9 @@ pub enum Error {
     ErrPrefix,
     ErrHexError(hex::FromHexError),
     ParseIntError(core::num::ParseIntError),
+
+    // Expect 0, provide 1
+    BytesSizeError(usize, usize),
 }
 
 impl From<hex::FromHexError> for Error {

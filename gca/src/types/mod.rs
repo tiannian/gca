@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 use primitive_types::{H160, H256};
 
 macro_rules! impl_traits {
-    ($ty:ty, $len:expr ) => {
+    ($ty:ty, $len:expr, $inner:ty) => {
         impl AsRef<[u8]> for $ty {
             fn as_ref(&self) -> &[u8] {
                 self.0.as_bytes()
@@ -20,6 +20,12 @@ macro_rules! impl_traits {
                 Self(From::from(b))
             }
         }
+
+        impl $ty {
+            pub fn from_slice(b: &[u8]) -> Self {
+                Self(<$inner>::from_slice(b))
+            }
+        }
     };
 }
 
@@ -29,12 +35,12 @@ pub use block_height::*;
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct BlockHash(pub H256);
 
-impl_traits!(BlockHash, 32);
+impl_traits!(BlockHash, 32, H256);
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Txhash(pub H256);
 
-impl_traits!(Txhash, 32);
+impl_traits!(Txhash, 32, H256);
 
 #[derive(Debug, Default, Clone)]
 pub struct MemoOperation(pub u32);
@@ -54,7 +60,7 @@ pub struct Amount(pub u64);
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MerkleHash(pub H256);
 
-impl_traits!(MerkleHash, 32);
+impl_traits!(MerkleHash, 32, H256);
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Timestamp(pub i64);
@@ -62,4 +68,4 @@ pub struct Timestamp(pub i64);
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct NodeAddress(pub H160);
 
-impl_traits!(NodeAddress, 20);
+impl_traits!(NodeAddress, 20, H160);

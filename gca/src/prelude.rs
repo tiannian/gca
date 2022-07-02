@@ -1,11 +1,26 @@
+use alloc::vec::Vec;
+use bytes::BufMut;
+
 use crate::Result;
 
-pub trait FromBytes: Sized {
+pub trait BytesSize {
+    fn bytes_size() -> usize;
+}
+
+pub trait FromBytes: Sized + BytesSize {
     fn from_bytes(bytes: &[u8]) -> Result<Self>;
 }
 
-pub trait ToBytes {
-    type Bytes: AsRef<[u8]>;
+pub trait ToBytes: BytesSize {
+    fn to_bytes(&self, buf: &mut impl BufMut) -> Result<()>;
+}
 
-    fn to_bytes(&self) -> Result<Self::Bytes>;
+pub trait IntoBytes: ToBytes {
+    fn into_bytes(&self) -> Result<Vec<u8>> {
+        let mut buf = Vec::with_capacity(Self::bytes_size());
+
+        self.to_bytes(&mut buf)?;
+
+        Ok(buf)
+    }
 }
