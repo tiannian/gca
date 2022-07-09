@@ -29,4 +29,7 @@ pub use prelude::*;
 mod output_id;
 pub use output_id::*;
 
+mod event;
+pub use event::*;
+
 pub mod utils;

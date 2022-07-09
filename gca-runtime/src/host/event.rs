@@ -1,5 +1,7 @@
 use std::{collections::BTreeMap, fmt::Debug, string::FromUtf8Error, sync::Arc};
 
+use gca_core::EventAttribute;
+
 use crate::{FuncDefine, Host, Instance, Memory, Val, ValTy};
 
 #[derive(Debug)]
@@ -25,12 +27,6 @@ impl From<EmiterError> for Box<dyn Debug + Sync + Send> {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct EventAttribute {
-    pub key: Vec<u8>,
-    pub value: Vec<u8>,
-    pub index: bool,
-}
 
 pub struct EventEmiter<M> {
     func_def: Arc<Vec<FuncDefine>>,
