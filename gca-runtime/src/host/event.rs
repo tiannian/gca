@@ -27,7 +27,6 @@ impl From<EmiterError> for Box<dyn Debug + Sync + Send> {
     }
 }
 
-
 pub struct EventEmiter<M> {
     func_def: Arc<Vec<FuncDefine>>,
     instance: Option<M>,

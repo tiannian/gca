@@ -7,10 +7,9 @@ pub struct EventAttribute {
     pub index: bool,
 }
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Event {
     pub name: String,
     pub attrs: Vec<EventAttribute>,
 }
-
 

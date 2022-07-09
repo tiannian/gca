@@ -1,7 +1,8 @@
 use alloc::vec::Vec;
 use bytes::BufMut;
+use digest::{Digest, consts::U32};
 
-use crate::Result;
+use crate::{Result, MerkleHash};
 
 pub trait BytesSize {
     fn bytes_size() -> usize;
@@ -24,3 +25,8 @@ pub trait IntoBytes: ToBytes {
         Ok(buf)
     }
 }
+
+pub trait Hashable {
+    fn get_hash<D: Digest<OutputSize = U32>>(&self) -> MerkleHash;
+}
+
