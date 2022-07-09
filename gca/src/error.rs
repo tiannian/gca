@@ -7,6 +7,10 @@ pub enum Error {
 
     // Got 0, Expect 1,
     BytesSizeError(usize, usize),
+
+    InvaildOutputType(u8),
+
+    NoColonFound,
 }
 
 impl Debug for Error {
@@ -16,6 +20,8 @@ impl Debug for Error {
             Self::ErrHexError(e) => write!(f, "{:?}", e),
             Self::ParseIntError(e) => write!(f, "{:?}", e),
             Self::BytesSizeError(a, b) => write!(f, "Bytes size error. Got {}, Expect {}", a, b),
+            Self::InvaildOutputType(a) => write!(f, "Invaild output type: {}", a),
+            Self::NoColonFound => write!(f, "No Colon Found"),
         }
     }
 }

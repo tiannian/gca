@@ -20,4 +20,3 @@ pub struct Input {
     pub unlock: Vec<u8>,
     pub operation: InputOperation,
 }
-

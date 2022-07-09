@@ -1,7 +1,7 @@
-use alloc::{string::String, format};
+use alloc::{format, string::String};
 use bytes::{Buf, BufMut};
 
-use crate::{Txhash, Result, Error, FromBytes, utils, ToBytes, BytesSize, IntoBytes};
+use crate::{utils, BytesSize, Error, FromBytes, IntoBytes, Result, ToBytes, Txhash};
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct OutputId {
@@ -25,13 +25,19 @@ impl OutputId {
             return Err(Error::ErrPrefix("0x"));
         }
 
-        let inner = &s[2..66];
+        let s = &s[2..];
 
-        let txhash_bytes = hex::decode(inner)?;
+        let inner_pos = s.find(':').ok_or(Error::NoColonFound)?;
+
+        let txhash_bytes = if inner_pos % 2 == 0 {
+            hex::decode(&s[..inner_pos])?
+        } else {
+            hex::decode(format!("{:0>64}", &s[..inner_pos]))?
+        };
 
         let txhash = Txhash::from_slice(&txhash_bytes);
 
-        let n_str = &s[67..];
+        let n_str = &s[inner_pos + 1..];
 
         let n = n_str.parse()?;
 
@@ -61,7 +67,6 @@ impl FromBytes for OutputId {
 
 impl ToBytes for OutputId {
     fn to_bytes(&self, buff: &mut impl BufMut) -> Result<()> {
-
         buff.put_slice(self.txhash.as_ref());
         buff.put_u64(self.n);
 
