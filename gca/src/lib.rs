@@ -32,4 +32,7 @@ pub use output_id::*;
 mod event;
 pub use event::*;
 
+mod receipt;
+pub use receipt::*;
+
 pub mod utils;

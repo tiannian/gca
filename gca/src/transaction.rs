@@ -9,3 +9,4 @@ pub struct Transaction {
     pub outputs: Vec<Output>,
     pub memos: Vec<Memo>,
 }
+
